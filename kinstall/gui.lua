@@ -151,6 +151,7 @@ function kgui:styleContent(extra)
       border-bottom-left-radius: ]] .. t.radius .. [[px;
       border-bottom-right-radius: ]] .. t.radius .. [[px;
       qproperty-wordWrap: true;
+      padding: ]] .. kgui:px(4) .. [[px;
       ]] .. extra .. [[
     }
   ]]

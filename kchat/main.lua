@@ -6,6 +6,7 @@ kchat.enabled = false
 kchat.colors = kchat.colors or {}
 kchat.silent = kchat.silent or 'n'
 kchat.boxHeight = kchat.boxHeight or 200
+kchat.box = kchat.box or nil
 kchat.history = kchat.history or {}
 kchat.historyMax = 500
 
@@ -71,10 +72,24 @@ function kchat:unregister()
 end
 
 --
--- Wyswietla okienko chatu (ten sam system co reszta widgetow: kgui:addBox + kgui:setBoxContent)
+-- Wyswietla okienko chatu. Tresc renderowana jest tym samym stylem co
+-- reszta widgetow (kgui:styleContent), ale okienko NIE jest rejestrowane
+-- jako kgui.ui['chat']['content'] - dzieki temu kgui:updateWrapperSize nie
+-- nadpisuje co update wysokosci wrappera i mozna go swobodnie rozciagac.
 --
 function kchat:addBox()
-  kgui:addBox('chat', kchat.boxHeight, "Czat", "chat")
+  local wrapper = kgui:addBox('chat', kchat.boxHeight, "Czat", "chat")
+  kchat.box = kchat.box or Geyser.Label:new({
+    name = "chat",
+    x = 2,
+    y = (kgui.titleHeight + 2) .. "px",
+    width = "100%-4px",
+    height = "100%-" .. (kgui.titleHeight + 4) .. "px",
+  }, wrapper)
+  kchat.box:setStyleSheet(kgui:styleContent())
+  kchat.box:enableClickthrough()
+  kchat.box:raiseAll()
+  kchat.box:show()
   kchat:render()
 end
 
@@ -90,16 +105,17 @@ end
 -- Wylicza ile ostatnich wiadomosci zmiesci sie w okienku i wyswietla je
 --
 function kchat:render()
-  if kgui.ui['chat'] == nil then return end
+  if kchat.box == nil then return end
   local lineHeight = kgui.baseFontHeightPx or 16
-  local visibleLines = math.floor(kchat.boxHeight / lineHeight)
+  local boxHeight = kchat.box:get_height() or kchat.boxHeight
+  local visibleLines = math.floor(boxHeight / lineHeight)
   if visibleLines < 1 then visibleLines = 1 end
   local from = math.max(1, #kchat.history - visibleLines + 1)
   local lines = {}
   for i = from, #kchat.history do
     table.insert(lines, kchat.history[i])
   end
-  kgui:setBoxContent('chat', table.concat(lines, '<br>'), kchat.boxHeight)
+  kchat.box:rawEcho(formatText(table.concat(lines, '<br>')))
 end
 
 --
