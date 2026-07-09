@@ -87,7 +87,7 @@ function kchat:addBox()
   }, wrapper)
   kchat.box:setStyleSheet(kgui:styleContent())
   kchat.box:enableClickthrough()
-  kchat.console = kchat.console or Geyser.MiniConsole:new({
+  kchat.console = Geyser.MiniConsole:new({
     name = "chatConsole",
     width = "100%-6px",
     height = "100%-4px",
@@ -110,6 +110,8 @@ end
 --
 function kchat:removeBox()
   kgui:removeBox('chat')
+  kchat.box = nil
+  kchat.console = nil
   kgui:update()
 end
 

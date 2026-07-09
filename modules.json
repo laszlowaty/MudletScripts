@@ -30,7 +30,7 @@
     "shortDesc": "Moduł informacji o zapamiętywanych czarach"
   },
   "kchat": {
-    "version": 6,
+    "version": 7,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kchat.zip",
     "commands": [ "chat" ],
     "shortDesc": "Moduł czatu (wersja testowa)"
