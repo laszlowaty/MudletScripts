@@ -278,19 +278,18 @@ function kmap:addBox()
   kmap.mapperBox = Geyser.Label:new({
     name = 'mapper',
     x = 2,
-    y = kgui.baseFontHeightPx + 2 .. "px",
+    y = (kgui.titleHeight + 2) .. "px",
     width = "100%-4px",
-    height = "100%-".. kgui.baseFontHeightPx + 4 .."px",
+    height = "100%-" .. (kgui.titleHeight + 4) .. "px",
   }, wrapper)
   wrapper.windowList.mapperWrapperadjLabel:setStyleSheet([[
     QWidget {
       background: rgba(0,0,0,0);
     }
   ]])
-  kmap.mapperBox:setStyleSheet([[
-    background: rgba(0,0,0,0);
-    border: 2px solid rgba(30,30,30,230)
-  ]])
+  kmap.mapperBox:setStyleSheet(kgui:styleContent([[
+      border: 1px solid ]] .. kgui.theme.border .. [[;
+  ]]))
 
   kmap.messageBox = Geyser.Label:new({
     name = 'mapperMessage',
@@ -299,7 +298,13 @@ function kmap:addBox()
     x = "2px",
     y = "2px"
   }, kmap.mapperBox)
-  kmap.messageBox:setStyleSheet([[ background: rgba(0,0,0,0.8); color: #e0e0e0; font-size: 12px; font-family: sans-serif; ]])
+  kmap.messageBox:setStyleSheet([[
+    background: rgba(17,20,28,0.85);
+    color: ]] .. kgui.theme.textMain .. [[;
+    font-size: ]] .. kgui:font(12) .. [[px;
+    font-family: sans-serif;
+    border-radius: ]] .. kgui.theme.radius .. [[px;
+  ]])
   kmap.messageBox:enableClickthrough()
   kmap.messageBox:hide()
 

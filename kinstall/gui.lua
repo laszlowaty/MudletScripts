@@ -14,13 +14,175 @@ kgui.vLeftDragTimer = kgui.vLeftDragTimer or nil
 kgui.extraBorderBottom = kgui.extraBorderBottom or nil
 kgui.extraBorderLeft = kgui.extraBorderLeft or nil
 
+--
+-- Motyw (theme) i pomocnicze funkcje skalowania UI
+--
+-- Baza projektowa to 1920x1080 - wszystkie wymiary skalujemy wzgledem tej
+-- rozdzielczosci i ograniczamy clampem, zeby UI nie bylo mikroskopijne
+-- ani ogromne na skrajnych rozdzielczosciach (768p .. 4K).
+--
+
+kgui.theme = kgui.theme or {
+  font = [["JetBrains Mono", "Cascadia Mono", "Consolas", "DejaVu Sans Mono", "monospace"]],
+  bgMain = "rgb(10,12,18)",
+  bgPanel = "rgb(22,25,34)",
+  bgPanelHeader = "rgb(17,20,28)",
+  bgContent = "rgba(18,21,29,235)",
+  border = "rgba(60,70,90,140)",
+  borderHover = "rgba(90,180,220,180)",
+  accent = "#5fd0e6",
+  textMain = "#dbe2ea",
+  textDim = "#8b96a8",
+  danger = "#e05a5a",
+  dangerHover = "#ff6b6b",
+  radius = 6,
+}
+
+kgui.layout = kgui.layout or {
+  uiScale = 1,
+  fontScale = 1,
+  rightWidthMin = 380,
+  rightWidthPreferredRatio = 0.31,
+  rightWidthMax = 660,
+}
+
+--- ograniczenie wartosci do przedzialu [minValue, maxValue]
+function kgui:clamp(value, minValue, maxValue)
+  if value == nil then return minValue end
+  if value < minValue then return minValue end
+  if value > maxValue then return maxValue end
+  return value
+end
+
+--- zaokraglenie do najblizszej liczby calkowitej (Lua 5.1 nie ma math.round)
+function kgui:round(value)
+  if value == nil then return 0 end
+  return math.floor(value + 0.5)
+end
+
+--- przeskalowanie wartosci pikselowej wzgledem uiScale
+function kgui:scale(value)
+  local uiScale = (kgui.layout and kgui.layout.uiScale) or 1
+  return kgui:round(value * uiScale)
+end
+
+--- przeskalowanie wartosci fontowej wzgledem fontScale (lagodniejsze niz uiScale)
+function kgui:font(value)
+  local fontScale = (kgui.layout and kgui.layout.fontScale) or 1
+  return kgui:round(value * fontScale)
+end
+
+--- alias, przydatny semantycznie przy szerokosciach/wysokosciach/paddingach
+function kgui:px(value)
+  return kgui:scale(value)
+end
+
+--- pasek tytulowy panelu (karta): tlo, dolny border, font
+function kgui:styleTitle()
+  local t = kgui.theme
+  return [[
+    QLabel {
+      qproperty-alignment: 'AlignLeft|AlignVCenter';
+      padding-left: ]] .. kgui:px(8) .. [[px;
+      background-color: ]] .. t.bgPanelHeader .. [[;
+      font-family: ]] .. t.font .. [[;
+      font-size: ]] .. kgui.baseFontHeight .. [[px;
+      color: ]] .. t.textMain .. [[;
+      border-top-left-radius: ]] .. t.radius .. [[px;
+      border-top-right-radius: ]] .. t.radius .. [[px;
+      border-bottom: 1px solid ]] .. t.border .. [[;
+    }
+    QLabel::hover {
+      background-color: ]] .. t.bgPanel .. [[;
+    }
+  ]]
+end
+
+--- male ikonowe przyciski titlebara (close/min/leftright/topbottom/bottombar)
+-- @param variant "danger" dla przycisku zamykania, nil/"" dla reszty
+function kgui:styleButton(variant)
+  local t = kgui.theme
+  local color = t.textDim
+  local hoverColor = t.textMain
+  local hoverBg = "rgba(70,80,100,90)"
+  if variant == "danger" then
+    hoverColor = "#ffffff"
+    hoverBg = t.danger
+  end
+  return [[
+    QLabel {
+      qproperty-alignment: 'AlignCenter|AlignVCenter';
+      background-color: rgba(0,0,0,0);
+      color: ]] .. color .. [[;
+      font-family: "sans-serif";
+      font-size: ]] .. kgui.baseFontHeight .. [[px;
+      border-radius: ]] .. t.radius .. [[px;
+    }
+    QLabel::hover {
+      background-color: ]] .. hoverBg .. [[;
+      color: ]] .. hoverColor .. [[;
+    }
+  ]]
+end
+
+--- karta panelu (wrapper/adjLabel): subtelny border, mały radius, hover
+function kgui:stylePanel()
+  local t = kgui.theme
+  return [[
+    QLabel {
+      padding: ]] .. kgui.boxPadding .. [[px;
+      background-color: rgba(0,0,0,0);
+      border: 1px solid ]] .. t.border .. [[;
+      border-radius: ]] .. t.radius .. [[px;
+    }
+    QLabel::hover {
+      border: 1px solid ]] .. t.borderHover .. [[;
+    }
+  ]]
+end
+
+--- tresc panelu (karta wewnetrzna)
+function kgui:styleContent(extra)
+  local t = kgui.theme
+  extra = extra or ""
+  return [[
+    QLabel {
+      background-color: ]] .. t.bgContent .. [[;
+      border-bottom-left-radius: ]] .. t.radius .. [[px;
+      border-bottom-right-radius: ]] .. t.radius .. [[px;
+      qproperty-wordWrap: true;
+      ]] .. extra .. [[
+    }
+  ]]
+end
+
+--- uchwyt do przeciagania (kolumna prawa/lewa)
+function kgui:styleDragHandle()
+  return [[
+    QLabel { background-color: rgba(0,0,0,0%) }
+    QLabel::hover { background-color: rgba(95,208,230,60) }
+  ]]
+end
+
+--- styl MiniConsole (np. kchat) zgodny z motywem
+function kgui:styleMiniConsole()
+  local t = kgui.theme
+  return [[
+    QTextEdit {
+      background-color: ]] .. t.bgContent .. [[;
+      color: ]] .. t.textMain .. [[;
+      border: none;
+    }
+  ]]
+end
+
 function kgui:init()
   kgui:calculateSizes()
   kgui.uiState.mainRight = kgui.uiState.mainRight or {}
   kgui.uiState.mainLeft = kgui.uiState.mainLeft or {}
   local screenWidth = getMainWindowSize()
-  local widthRight = screenWidth / 3
-  local widthLeft = screenWidth / 3
+  local widthRight = kgui.layout.rightWidthPreferred or (screenWidth / 3)
+  local widthLeft = kgui.layout.rightWidthPreferred or (screenWidth / 3)
   local x = '-' .. widthRight .. 'px'
   if kgui.uiState.mainRight.width ~= nil then
     widthRight = (kgui.uiState.mainRight.width-20) .. 'px'
@@ -84,10 +246,7 @@ function kgui:init()
     height="100%",
     message=""
   }, kgui.mainRight)
-  kgui.mainRightDrag:setStyleSheet([[
-    QLabel { background-color: rgba(0,0,0,0%) }
-    QLabel::hover {background-color: rgba(60,60,60,100%) }
-  ]])
+  kgui.mainRightDrag:setStyleSheet(kgui:styleDragHandle())
   kgui.mainRightDrag:setCursor("ResizeHorizontal")
   setLabelClickCallback("KGuiMainRightDrag", 'kgui:onRightHDragClick')
   setLabelReleaseCallback("KGuiMainRightDrag", 'kgui:onRightHDragRelease')
@@ -101,10 +260,7 @@ function kgui:init()
     height="100%",
     message=""
   }, kgui.mainLeft)
-  kgui.mainLeftDrag:setStyleSheet([[
-    QLabel { background-color: rgba(0,0,0,0%) }
-    QLabel::hover {background-color: rgba(60,60,60,100%) }
-  ]])
+  kgui.mainLeftDrag:setStyleSheet(kgui:styleDragHandle())
   kgui.mainLeftDrag:setCursor("ResizeHorizontal")
   setLabelClickCallback("KGuiMainLeftDrag", 'kgui:onLeftHDragClick')
   setLabelReleaseCallback("KGuiMainLeftDrag", 'kgui:onLeftHDragRelease')
@@ -168,6 +324,13 @@ function kgui:addBox(name, height, title, commandName)
     container = kgui.mainBottom
   end
 
+  -- rozmiar przyciskow titlebara i odstep miedzy nimi (wynika z fontu + paddingu)
+  local btn = kgui.buttonSize
+  local btnGap = 2
+  local function btnX(slot)
+    return "-" .. (slot * (btn + btnGap)) .. "px"
+  end
+
   -- tworzenie glownego kontenera boxa
   if socket ~= "bottomBar" then
     kgui.ui[name]['wrapper'] = kgui.ui[name]['wrapper'] or Adjustable2.Container:new({
@@ -186,16 +349,7 @@ function kgui:addBox(name, height, title, commandName)
     kgui.ui[name]['wrapper']:disableAutoSave()
     kgui.ui[name]['wrapper'].windowList[name .. 'WrapperexitLabel']:hide()
     kgui.ui[name]['wrapper'].windowList[name .. 'WrapperminimizeLabel']:hide()
-    kgui.ui[name]['wrapper'].windowList[name .. 'WrapperadjLabel']:setStyleSheet([[
-      QLabel {
-        padding: ]]..kgui.boxPadding..[[px;
-        border: 2px solid rgba(40,40,40,0);
-        background-color: rgba(0,0,0,0);
-      }
-      QLabel::hover {
-        border: 2px solid rgba(40,40,40,255);
-      }
-    ]])
+    kgui.ui[name]['wrapper'].windowList[name .. 'WrapperadjLabel']:setStyleSheet(kgui:stylePanel())
     kgui.ui[name]['wrapper']:show()
 
     -- minimalizowanie tresci ktora dopiero bedzie dodana do okienka
@@ -207,30 +361,17 @@ function kgui:addBox(name, height, title, commandName)
       end)
     end
 
-    -- pasek okienka
+    -- pasek okienka (titlebar jako naglowek karty)
     kgui.ui[name]['title'] = kgui.ui[name]['title'] or Geyser.Label:new({
       name = name .. 'Title',
       x = "2px",
       y = "2px",
       width="100%-4px",
-      height=kgui.baseFontHeightPx + 2 .. "px"
+      height=kgui.titleHeight .. "px"
     }, kgui.ui[name]['wrapper'])
 
     -- dostosowywanie paska okienka
-    kgui.ui[name]['title']:setStyleSheet([[
-      QLabel {
-        qproperty-alignment: 'AlignLeft|AlignTop';
-        padding-left: 2px;
-        background-color: rgba(0,0,0,230);
-        font-family: 'Marcellus';
-        font-size: ]] .. kgui.baseFontHeight - 2 .. [[px;
-        color: #eeeeee;
-        border-bottom: 2px solid rgb(80,80,80);
-      }
-      QLabel::hover {
-        background-color: rgba(80,80,80,255);
-      }
-    ]])
+    kgui.ui[name]['title']:setStyleSheet(kgui:styleTitle())
     kgui.ui[name]['title']:rawEcho(title);
     kgui.ui[name]['title']:enableClickthrough()
 
@@ -250,26 +391,13 @@ function kgui:addBox(name, height, title, commandName)
   -- przycisk zamykania
   kgui.ui[name]['close'] = kgui.ui[name]['close'] or Geyser.Label:new({
     name = name .. 'Close',
-    x = "-22px",
+    x = btnX(1),
     y = "0px",
-    width="20px",
-    height=kgui.baseFontHeight + 4 .. "px",
+    width=btn .. "px",
+    height=btn .. "px",
   }, kgui.ui[name]['wrapper'])
 
-  kgui.ui[name]['close']:setStyleSheet([[
-    QLabel {
-      qproperty-alignment: 'AlignCenter|AlignTop';
-      background-color: rgba(60,60,60,0);
-      color: #aaaaaa;
-      font-family: "sans-serif";
-      font-size: ]] .. kgui.baseFontHeight .. [[px;
-      border-radius: 10px;
-    }
-    QLabel::hover {
-      background-color: rgba(60,60,60,255);
-      color: #eeeeee;
-    }
-  ]])
+  kgui.ui[name]['close']:setStyleSheet(kgui:styleButton("danger"))
   kgui.ui[name]['close']:setFontSize(kgui.baseFontHeight)
   kgui.ui[name]['close']:setCursor("PointingHand")
   kgui.ui[name]['close']:rawEcho("<center>×</center>")
@@ -281,26 +409,13 @@ function kgui:addBox(name, height, title, commandName)
     -- przycisk minimalizacji
     kgui.ui[name]['min'] = kgui.ui[name]['min'] or Geyser.Label:new({
       name = name .. 'Min',
-      x = "-44px",
+      x = btnX(2),
       y = "0px",
-      width="20px",
-      height=kgui.baseFontHeight + 4 .. "px",
+      width=btn .. "px",
+      height=btn .. "px",
     }, kgui.ui[name]['wrapper'])
 
-    kgui.ui[name]['min']:setStyleSheet([[
-      QLabel {
-        qproperty-alignment: 'AlignCenter|AlignTop';
-        background-color: rgba(60,60,60,0);
-        color: #aaaaaa;
-        font-family: "sans-serif";
-        font-size: ]] .. kgui.baseFontHeight .. [[px;
-        border-radius: 10px;
-      }
-      QLabel::hover {
-        background-color: rgba(60,60,60,255);
-        color: #eeeeee;
-      }
-    ]])
+    kgui.ui[name]['min']:setStyleSheet(kgui:styleButton())
     kgui.ui[name]['min']:setFontSize(kgui.baseFontHeight)
     kgui.ui[name]['min']:setCursor("PointingHand")
     kgui.ui[name]['min']:rawEcho("<center>-</center>")
@@ -320,26 +435,13 @@ function kgui:addBox(name, height, title, commandName)
 
     kgui.ui[name]['leftright'] = kgui.ui[name]['leftright'] or Geyser.Label:new({
       name = name .. 'Leftright',
-      x = "-66px",
+      x = btnX(3),
       y = "0px",
-      width="20px",
-      height=kgui.baseFontHeight + 4 .. "px",
+      width=btn .. "px",
+      height=btn .. "px",
     }, kgui.ui[name]['wrapper'])
 
-    kgui.ui[name]['leftright']:setStyleSheet([[
-      QLabel {
-        qproperty-alignment: 'AlignCenter|AlignTop';
-        background-color: rgba(60,60,60,0);
-        color: #aaaaaa;
-        font-family: "sans-serif";
-        font-size: ]] .. kgui.baseFontHeight .. [[px;
-        border-radius: 10px;
-      }
-      QLabel::hover {
-        background-color: rgba(60,60,60,255);
-        color: #eeeeee;
-      }
-    ]])
+    kgui.ui[name]['leftright']:setStyleSheet(kgui:styleButton())
     kgui.ui[name]['leftright']:setFontSize(kgui.baseFontHeight)
     kgui.ui[name]['leftright']:setCursor("PointingHand")
     kgui.ui[name]['leftright']:rawEcho("<center>" .. labelka .. "</center>")
@@ -355,26 +457,13 @@ function kgui:addBox(name, height, title, commandName)
 
     kgui.ui[name]['topbottom'] = kgui.ui[name]['topbottom'] or Geyser.Label:new({
       name = name .. 'Topbottom',
-      x = "-88px",
+      x = btnX(4),
       y = "0px",
-      width="20px",
-      height=kgui.baseFontHeight + 4 .. "px",
+      width=btn .. "px",
+      height=btn .. "px",
     }, kgui.ui[name]['wrapper'])
 
-    kgui.ui[name]['topbottom']:setStyleSheet([[
-      QLabel {
-        qproperty-alignment: 'AlignCenter|AlignTop';
-        background-color: rgba(60,60,60,0);
-        color: #aaaaaa;
-        font-family: "sans-serif";
-        font-size: ]] .. kgui.baseFontHeight .. [[px;
-        border-radius: 10px;
-      }
-      QLabel::hover {
-        background-color: rgba(60,60,60,255);
-        color: #eeeeee;
-      }
-    ]])
+    kgui.ui[name]['topbottom']:setStyleSheet(kgui:styleButton())
     kgui.ui[name]['topbottom']:setFontSize(kgui.baseFontHeight)
     kgui.ui[name]['topbottom']:setCursor("PointingHand")
     kgui.ui[name]['topbottom']:rawEcho("<center>" .. labelkaUpDown .. "</center>")
@@ -386,34 +475,21 @@ function kgui:addBox(name, height, title, commandName)
   -- przycisk bottom bar
   if name == "info" then
     local labelkaBottomBar = "_"
-    local labelX = "-110px"
+    local labelX = btnX(5)
     if socket == 'bottomBar' then
       labelkaBottomBar = "↑"
-      labelX = "-44px"
+      labelX = btnX(2)
     end
 
     kgui.ui[name]['bottombarbtn'] = kgui.ui[name]['bottombarbtn'] or Geyser.Label:new({
       name = name .. 'BottomBarBtn',
       x = labelX,
       y = "0px",
-      width="20px",
-      height=kgui.baseFontHeight + 4 .. "px",
+      width=btn .. "px",
+      height=btn .. "px",
     }, kgui.ui[name]['wrapper'])
 
-    kgui.ui[name]['bottombarbtn']:setStyleSheet([[
-      QLabel {
-        qproperty-alignment: 'AlignCenter|AlignTop';
-        background-color: rgba(60,60,60,0);
-        color: #aaaaaa;
-        font-family: "sans-serif";
-        font-size: ]] .. kgui.baseFontHeight .. [[px;
-        border-radius: 10px;
-      }
-      QLabel::hover {
-        background-color: rgba(60,60,60,255);
-        color: #eeeeee;
-      }
-    ]])
+    kgui.ui[name]['bottombarbtn']:setStyleSheet(kgui:styleButton())
     kgui.ui[name]['bottombarbtn']:setFontSize(kgui.baseFontHeight)
     kgui.ui[name]['bottombarbtn']:setCursor("PointingHand")
     kgui.ui[name]['bottombarbtn']:rawEcho("<center>" .. labelkaBottomBar .. "</center>")
@@ -514,19 +590,19 @@ function kgui:removeBox(name)
 end
 
 function kgui:newBoxContent(name, content)
-  local y = kgui.baseFontHeightPx + 4 .. "px"
+  local y = (kgui.titleHeight + 2) .. "px"
   local x = 2
   local padding = kgui.boxPadding
   local goesOnBottom = false
-  local bg = "rgb(30,30,30)"
+  local bg = kgui.theme.bgContent
   local borderTop = "0px"
   if kgui.uiState[name] ~= nil and kgui.uiState[name].socket == "bottomBar" then
     x = 0
     y = 0
     padding = 5
     goesOnBottom = true
-    bg="rgb(0,0,0)"
-    borderTop="1px solid #555555"
+    bg = kgui.theme.bgPanelHeader
+    borderTop = "1px solid " .. kgui.theme.border
   end
   kgui.ui[name]['content'] = kgui.ui[name]['content'] or Geyser.Label:new({
     name = name,
@@ -536,22 +612,22 @@ function kgui:newBoxContent(name, content)
     height = 0,
     message = formatText(content),
   }, kgui.ui[name]['wrapper'])
-  kgui.ui[name]['content']:setStyleSheet([[
-    QLabel {
-      background-color: ]]..bg..[[;
+  kgui.ui[name]['content']:setStyleSheet(kgui:styleContent([[
       border-top: ]]..borderTop..[[;
       padding-left: ]].. padding ..[[px;
       padding-right: ]].. padding ..[[px;
-      qproperty-wordWrap: true;
-    }
-  ]])
+  ]]))
+  -- bez tego treść panelu przechwytuje kliknięcia i zasłania uchwyt
+  -- do przeciągania/resize'owania spod Adjustable2 (ten sam powód co
+  -- enableClickthrough() na tytule wyżej)
+  kgui.ui[name]['content']:enableClickthrough()
   if goesOnBottom == true then
     kgui.ui[name]['content']:lowerAll()
   end
 end
 
 function formatText(content)
-  return "<span style=\"color: #f0f0f0; font-size: " .. kgui.baseFontHeight .. "px; font-family: 'Marcellus'\">" .. content .. "</span>"
+  return "<span style=\"color: " .. kgui.theme.textMain .. "; font-size: " .. kgui.baseFontHeight .. "px; font-family: 'Marcellus'\">" .. content .. "</span>"
 end
 
 function kgui:setBoxContent(name, content, height)
@@ -567,7 +643,7 @@ function kgui:setBoxContent(name, content, height)
     kgui.ui[name]['content']:resize('100%', '100%')
     kgui.ui[name]['content'].contentHeight = height
   else
-    kgui.ui[name]['content']:resize('100%-4px', "100%-".. kgui.baseFontHeightPx + 6 .."px")
+    kgui.ui[name]['content']:resize('100%-4px', "100%-" .. (kgui.titleHeight + 4) .. "px")
     kgui.ui[name]['content'].contentHeight = height
   end
   kgui:update()
@@ -615,7 +691,7 @@ function kgui:updateWrapperSize(name)
         height = kgui.ui[name]['content'].contentHeight
       end
       if kgui.uiState[name] == nil or kgui.uiState[name].socket ~= "bottomBar" then
-        height = height + kgui.baseFontHeightPx * 2 + 4
+        height = height + kgui.titleHeight + 6
       else
         height = height + 10
       end
@@ -810,6 +886,37 @@ function kgui:updateMainContainers()
   kgui.mainRight:resize(kgui.mainRight.get_width(), "100%-".. (height + kgui.extraBorderBottom) .. "px")
 end
 
+--- odswieza rozmiary/style juz istniejacych paneli po zmianie rozdzielczosci
+-- (titlebar, przyciski, tresc) - nie tworzy paneli od nowa
+function kgui:restyleExistingBoxes()
+  local btn = kgui.buttonSize
+  local btnGap = 2
+  local function btnX(slot)
+    return "-" .. (slot * (btn + btnGap)) .. "px"
+  end
+  for name, box in pairs(kgui.ui) do
+    if box.title ~= nil then
+      box.title:resize("100%-4px", kgui.titleHeight .. "px")
+      box.title:setStyleSheet(kgui:styleTitle())
+    end
+    local slot = 1
+    for _, key in ipairs({"close", "min", "leftright", "topbottom"}) do
+      if box[key] ~= nil then
+        box[key]:resize(btn .. "px", btn .. "px")
+        box[key]:move(btnX(slot), "0px")
+        slot = slot + 1
+      end
+    end
+    if box.bottombarbtn ~= nil then
+      box.bottombarbtn:resize(btn .. "px", btn .. "px")
+    end
+    if box.content ~= nil and (kgui.uiState[name] == nil or kgui.uiState[name].socket ~= "bottomBar") then
+      box.content:move(2, (kgui.titleHeight + 2) .. "px")
+      box.content:resize('100%-4px', "100%-" .. (kgui.titleHeight + 4) .. "px")
+    end
+  end
+end
+
 function kgui:updateAll()
   for name in pairs(kinstall.modules) do
     if name ~= 'kinstall' then
@@ -928,6 +1035,10 @@ end
 function kgui:handleWindowResize()
   if kgui.windowResizeEventDebounce ~= nil then killTimer(kgui.windowResizeEventDebounce) end
   kgui.windowResizeEventDebounce = tempTimer(0.2, function()
+    -- przeliczamy skale/fonty/gap tylko, prawa/lewa kolumna nie jest tu ruszana
+    -- jesli user ma juz zapisana wlasna szerokosc (patrz kgui:init)
+    kgui:calculateSizes()
+    kgui:restyleExistingBoxes()
     kgui:updateAll()
     kgui.windowResizeEventDebounce = nil
   end)
@@ -967,41 +1078,60 @@ function kgui:transliterate(text)
   return out
 end
 
+--- oblicza uiScale/fontScale wzgledem bazowej rozdzielczosci 1920x1080
+-- oraz pochodne wymiary layoutu (titleHeight, buttonSize, gap, prawa kolumna)
+function kgui:calculateUiScale()
+  local screenWidth, screenHeight = getMainWindowSize()
+  screenWidth = screenWidth or 1920
+  screenHeight = screenHeight or 1080
+  local widthScale = screenWidth / 1920
+  local heightScale = screenHeight / 1080
+  local uiScale = math.min(widthScale, heightScale)
+  uiScale = kgui:clamp(uiScale, 0.85, 1.60)
+  local fontScale = kgui:clamp(uiScale, 0.90, 1.45)
+
+  kgui.layout = kgui.layout or {}
+  kgui.layout.uiScale = uiScale
+  kgui.layout.fontScale = fontScale
+  kgui.layout.panelGap = kgui:clamp(kgui:scale(8), 5, 10)
+  kgui.layout.rightWidthMin = 380
+  kgui.layout.rightWidthMax = 660
+  local preferredRight = screenWidth * 0.31
+  kgui.layout.rightWidthPreferred = kgui:clamp(preferredRight, kgui.layout.rightWidthMin, kgui.layout.rightWidthMax)
+end
+
+-- bazowy rozmiar czcionki paneli przy 1920x1080 (patrz kgui:calculateUiScale)
+kgui.baseFontHeightAt1080p = kgui.baseFontHeightAt1080p or 13
+
 function kgui:calculateSizes()
+  kgui:calculateUiScale()
   kgui.extraBorderBottom = kinstall:getConfig('extraBorderBottom')
   kgui.extraBorderLeft = kinstall:getConfig('extraBorderLeft')
   if kgui.extraBorderBottom == nil or kgui.extraBorderBottom == false or kgui.extraBorderBottom == '' then kgui.extraBorderBottom = 0 end
   if kgui.extraBorderLeft == nil or kgui.extraBorderLeft == false or kgui.extraBorderLeft == '' then kgui.extraBorderLeft = 0 end
+
+  -- rozmiar czcionki paneli skaluje sie z rozdzielczoscia okna (fontScale), a NIE
+  -- z czcionka glownego okna gry - inaczej UI nie rosnie razem z oknem/ekranem.
+  -- "+gui font <n>" (kinstall:getConfig('fontSize')) pozostaje recznym override'em:
+  -- jesli ustawiony, ma pierwszenstwo i nie jest dalej przeliczany wzgledem rozdzielczosci.
   local storedFontSize = kinstall:getConfig('fontSize')
-  local _, targetPixelHeight = calcFontSize(getFontSize())
+  local nominalSize
   if storedFontSize ~= nil and storedFontSize ~= false and storedFontSize ~= "" and tonumber(storedFontSize) > 0 then
-    _, targetPixelHeight = calcFontSize(tonumber(storedFontSize))
+    nominalSize = tonumber(storedFontSize)
+  else
+    nominalSize = kgui:round(kgui.baseFontHeightAt1080p * (kgui.layout.fontScale or 1))
   end
-  -- o ile chcemy zmienić wielkość czcionki w UI
-  targetPixelHeight = targetPixelHeight
-  local previousCandidate = 0
-  local previousI = 8
-  for i = 8, 50 do
-    local _, candidate = calcFontSize(i, 'Marcellus')
-    if candidate == targetPixelHeight then
-      kgui.baseFontHeight = i
-      kgui.baseFontHeightPx = candidate
-      kgui.boxPadding = math.ceil(kgui.baseFontHeightPx/2)
-      return
-    end
-    if candidate > targetPixelHeight and previousCandidate < targetPixelHeight then
-      kgui.baseFontHeight = previousI
-      kgui.baseFontHeightPx = previousCandidate
-      kgui.boxPadding = math.ceil(kgui.baseFontHeightPx/2)
-      return
-    end
-    previousCandidate = candidate
-    previousI = i
-  end
-  kgui.baseFontHeight = getFontSize()
-  local _, h = calcFontSize(getFontSize())
-  kgui.baseFontHeightPx = h
+  kgui.baseFontHeight = kgui:clamp(nominalSize, 8, 24)
+  local _, px = calcFontSize(kgui.baseFontHeight, 'Marcellus')
+  kgui.baseFontHeightPx = px
   kgui.boxPadding = math.ceil(kgui.baseFontHeightPx/2)
+  kgui:calculateDerivedSizes()
+end
+
+--- wymiary pochodne od fontu + paddingu (titlebar, przyciski), nie same z fontu
+function kgui:calculateDerivedSizes()
+  kgui.titleHeight = kgui.baseFontHeightPx + kgui:clamp(kgui:scale(10), 8, 16)
+  kgui.buttonSize = kgui:clamp(kgui.baseFontHeight + kgui:scale(8), 18, 30)
 end
 
 function kgui:translatePos(text)

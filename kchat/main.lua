@@ -80,10 +80,12 @@ function kchat:addBox()
   kchat.box = Geyser.Label:new({
     name = "chat",
     x = 2,
-    y = kgui.baseFontHeightPx + 4 .. "px",
+    y = (kgui.titleHeight + 2) .. "px",
     width = "100%-4px",
-    height = "100%-".. kgui.baseFontHeightPx + 6 .."px",
+    height = "100%-" .. (kgui.titleHeight + 4) .. "px",
   }, wrapper)
+  kchat.box:setStyleSheet(kgui:styleContent())
+  kchat.box:enableClickthrough()
   kchat.console = kchat.console or Geyser.MiniConsole:new({
     name = "chatConsole",
     width = "100%-6px",
@@ -92,7 +94,8 @@ function kchat:addBox()
     y = "2px",
     fontSize = kgui.baseFontHeight,
   }, kchat.box)
-  kchat.console:setColor(33, 33, 33)
+  kchat.console:setStyleSheet(kgui:styleMiniConsole())
+  kchat.console:setColor(18, 21, 29)
   kchat.console:enableAutoWrap()
   -- upewniamy sie ze wszystko jest odpowiednio przypiete i nie schowane
   kchat.box:add(kchat.console)
