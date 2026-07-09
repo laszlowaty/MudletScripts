@@ -381,6 +381,11 @@ function kgui:addBox(name, height, title, commandName)
       buttonsize = 0
     },container)
 
+    -- reuzywany wrapper mogl zostac w starym kontenerze (np. przenosiny lewo/prawo)
+    if kgui.ui[name]['wrapper'].container ~= container then
+      kgui.ui[name]['wrapper']:changeContainer(container)
+    end
+
     -- dostosowywanie glownego kontenera boxa
     kgui.ui[name]['wrapper'].socket = socket
     kgui.ui[name]['wrapper']:setPadding(0)
@@ -423,6 +428,9 @@ function kgui:addBox(name, height, title, commandName)
       width = "100%",
       height = wrapperHeight .. "px"
     },container)
+    if kgui.ui[name]['wrapper'].container ~= container then
+      kgui.ui[name]['wrapper']:changeContainer(container)
+    end
     kgui.ui[name]['wrapper'].socket = socket
   end
 
