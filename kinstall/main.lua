@@ -21,6 +21,11 @@ kinstall.firstGmcpWatch = nil
 -- i instalacyjne komunikaty nie wypalaly sobie domyslnego czarnego tla
 -- konsoli - patrz kgui.bgPanel w gui.lua, ten sam kolor motywu paneli
 setBackgroundColor("main", 22, 25, 34, 255)
+-- echo wpisywanych przez gracza komend uzywa osobnego tla, niezaleznego od
+-- setBackgroundColor - nowsze Mudlety maja dedykowana funkcje do tego
+if type(setCommandBackgroundColor) == 'function' then
+  setCommandBackgroundColor("main", 22, 25, 34, 255)
+end
 
 -- pobiera plik z wersjami pakietow
 function kinstall:fetchVersions()

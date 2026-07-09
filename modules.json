@@ -1,6 +1,6 @@
 {
   "kinstall": {
-    "version": 44,
+    "version": 45,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kinstall.zip",
     "commands": [ "install", "remove", "update", "gui", "config" ],
     "shortDesc": "Instalator modułów"
