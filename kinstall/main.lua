@@ -360,7 +360,8 @@ function kinstall:doGui()
   end
 
   cecho('<gold>Właczam GUI\n\n')
-  if kinstall:getConfig('fontSize') == nil then
+  local savedFontSize = kinstall:getConfig('fontSize')
+  if savedFontSize == nil or savedFontSize == false then
     kinstall.params[1] = 'font'
     kinstall.params[2] = '12'
     kinstall:doGui()
