@@ -1,6 +1,6 @@
 {
   "kinstall": {
-    "version": 37,
+    "version": 38,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kinstall.zip",
     "commands": [ "install", "remove", "update", "gui", "config" ],
     "shortDesc": "Instalator modułów"
@@ -30,7 +30,7 @@
     "shortDesc": "Moduł informacji o zapamiętywanych czarach"
   },
   "kchat": {
-    "version": 8,
+    "version": 9,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kchat.zip",
     "commands": [ "chat" ],
     "shortDesc": "Moduł czatu (wersja testowa)"

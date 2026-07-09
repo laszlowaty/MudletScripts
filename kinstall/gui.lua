@@ -2,7 +2,7 @@ module("kinstall/gui", package.seeall)
 setfenv(1, getfenv(2))
 
 kgui = kgui or {}
-kgui.ui = {}
+kgui.ui = kgui.ui or {}
 kgui.settingsFile = getMudletHomeDir() .. '/kguiSettings.json'
 kgui.uiState = kinstall:loadJsonFile(kgui.settingsFile)
 kgui.resizingEventHandler = kgui.resizingEventHandler or nil

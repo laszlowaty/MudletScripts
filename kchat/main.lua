@@ -4,8 +4,8 @@ setfenv(1, getfenv(2))
 kchat = kchat or {}
 kchat.enabled = false
 kchat.colors = kchat.colors or {}
-kchat.box = nil
-kchat.console = nil
+kchat.box = kchat.box or nil
+kchat.console = kchat.console or nil
 kchat.silent = kchat.silent or 'n'
 
 function kchat:doChat()
@@ -26,10 +26,10 @@ function kchat:doChat()
     end
     return
   end
-  kchat:register()
-  kchat:addBox()
   kinstall:setConfig('chat', 't')
   kchat.enabled = true
+  kchat:register()
+  kchat:addBox()
 end
 
 function kchat:undoChat()
