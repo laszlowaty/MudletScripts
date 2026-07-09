@@ -1,6 +1,6 @@
 {
   "name": "kchat",
-  "version": 16,
+  "version": 17,
   "commands": [ "chat" ],
   "shortDesc": "Moduł czatu (wersja testowa)"
 }

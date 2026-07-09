@@ -86,7 +86,9 @@ function kchat:addBox()
     width = "100%-4px",
     height = "100%-" .. (kgui.titleHeight + 4) .. "px",
   }, wrapper)
-  kchat.box:setStyleSheet(kgui:styleContent("qproperty-alignment: AlignTop;"))
+  -- AlignBottom: najnowsze wiadomosci trzymaja sie dolu panelu jak w
+  -- normalnym czacie (nowa wiadomosc wypycha starsze do gory)
+  kchat.box:setStyleSheet(kgui:styleContent("qproperty-alignment: AlignBottom;"))
   kchat.box:enableClickthrough()
   kchat.box:raiseAll()
   kchat.box:show()
