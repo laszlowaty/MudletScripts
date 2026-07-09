@@ -18,7 +18,7 @@
     "shortDesc": "Moduł informacji o graczu"
   },
   "kgroup": {
-    "version": 14,
+    "version": 15,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kgroup.zip",
     "commands": [ "group" ],
     "shortDesc": "Moduł informacji o grupie"
