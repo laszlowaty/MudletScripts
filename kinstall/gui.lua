@@ -342,9 +342,27 @@ function kgui:init()
   )
 end
 
+-- domyslne rozmieszczenie paneli przy pierwszej instalacji (patrz kgui:update
+-- ktore sortuje boxy w danym sockecie rosnaco po polu y)
+kgui.defaultLayout = {
+  chat = { socket = "topLeft", y = 0, fullHeight = true },
+  mapper = { socket = "topRight", y = 0 },
+  info = { socket = "topRight", y = 1 },
+  group = { socket = "topRight", y = 2 },
+  mem = { socket = "topRight", y = 3 },
+}
+
 function kgui:addBox(name, height, title, commandName)
   kgui.ui[name] = kgui.ui[name] or {}
   kgui.uiState[name] = kgui.uiState[name] or {}
+  if kgui.uiState[name].socket == nil and kgui.defaultLayout[name] ~= nil then
+    kgui.uiState[name].socket = kgui.defaultLayout[name].socket
+    kgui.uiState[name].y = kgui.defaultLayout[name].y
+    if kgui.defaultLayout[name].fullHeight == true then
+      local _, windowHeight = getMainWindowSize()
+      kgui.uiState[name].height = windowHeight
+    end
+  end
   local wrapperHeight = kgui.uiState[name].height or height
   if wrapperHeight < kgui.baseFontHeightPx + 10 then
     wrapperHeight = kgui.baseFontHeightPx + 10
@@ -1148,7 +1166,7 @@ function kgui:calculateUiScale()
 end
 
 -- bazowy rozmiar czcionki paneli przy 1920x1080 (patrz kgui:calculateUiScale)
-kgui.baseFontHeightAt1080p = kgui.baseFontHeightAt1080p or 13
+kgui.baseFontHeightAt1080p = kgui.baseFontHeightAt1080p or 12
 
 function kgui:calculateSizes()
   kgui:calculateUiScale()

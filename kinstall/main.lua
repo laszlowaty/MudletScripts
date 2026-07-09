@@ -364,6 +364,7 @@ function kinstall:doGui()
   tempTimer(0.6, function() kinstall:runCmd('+', 'info', true) end)
   tempTimer(0.7, function() kinstall:runCmd('+', 'group', true) end)
   tempTimer(0.8, function() kinstall:runCmd('+', 'chat', true) end)
+  tempTimer(0.9, function() kinstall:runCmd('+', 'mem', true) end)
 end
 
 function kinstall:undoGui()
@@ -372,6 +373,7 @@ function kinstall:undoGui()
   tempTimer(0.5, function() kinstall:runCmd('-', 'group', true) end)
   tempTimer(0.6, function() kinstall:runCmd('-', 'info', true) end)
   tempTimer(0.7, function() kinstall:runCmd('-', 'map', true) end)
+  tempTimer(0.8, function() kinstall:runCmd('-', 'mem', true) end)
 end
 
 function kinstall:doReset()
