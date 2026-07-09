@@ -109,7 +109,7 @@ function kchat:addBox()
     fontSize = kgui.baseFontHeight,
   }, kchat.box)
   kchat.console:setStyleSheet(kgui:styleMiniConsole())
-  kchat.console:setColor(18, 21, 29)
+  setBackgroundColor("chatConsole", 18, 21, 29, 235)
   kchat.console:enableAutoWrap()
   -- upewniamy sie ze wszystko jest odpowiednio przypiete i nie schowane
   kchat.box:add(kchat.console)
