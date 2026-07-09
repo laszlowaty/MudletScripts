@@ -36,7 +36,6 @@ function kgroup:doGroup()
     cecho('<gold>Włączam panel grupy\n')
   end
   kgroup:addBox()
-  setBackgroundColor("main", 22, 25, 34, 255)
   kinstall:setConfig('group', 't')
   kgroup.enabled = true
 end
@@ -47,7 +46,6 @@ function kgroup:undoGroup()
     cecho('<gold>Wyłączam panel grupy\n')
   end
   kgroup:removeBox()
-  setBackgroundColor("main", 0, 0, 0, 255)
   kinstall:setConfig('group', 'n')
   kgroup.enabled = false
 end

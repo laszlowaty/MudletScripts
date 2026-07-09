@@ -17,6 +17,11 @@ kinstall.params = {}
 kinstall.duringConfig = false
 kinstall.firstGmcpWatch = nil
 
+-- ustawiane jak najwczesniej (przed jakimkolwiek echo/cecho), zeby powitalne
+-- i instalacyjne komunikaty nie wypalaly sobie domyslnego czarnego tla
+-- konsoli - patrz kgui.bgPanel w gui.lua, ten sam kolor motywu paneli
+setBackgroundColor("main", 22, 25, 34, 255)
+
 -- pobiera plik z wersjami pakietow
 function kinstall:fetchVersions()
   lfs.mkdir(kinstall.tmpFolder)
