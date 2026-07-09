@@ -175,6 +175,8 @@ function kmem:memInfoEventHandler()
   txt = txt .. '</td></tr></table>'
 
   if height < #queue then height = #queue end
+  -- +1 na wiersz stopki (wolne sloty pamieci), ktory nie jest liczony w petli powyzej
+  height = height + 1
 
   kgui:setBoxContent('mem', txt, height * fontSizePx + kgui.baseFontHeightPx + kgui.boxPadding * 2 + 4)
   kgui:update()

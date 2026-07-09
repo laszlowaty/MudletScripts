@@ -173,6 +173,44 @@ function kgui:styleMiniConsole()
       color: ]] .. t.textMain .. [[;
       border: none;
     }
+    QScrollBar:vertical {
+      background: ]] .. t.bgContent .. [[;
+      width: 10px;
+      margin: 0px;
+    }
+    QScrollBar::handle:vertical {
+      background: ]] .. t.border .. [[;
+      border-radius: 4px;
+      min-height: 20px;
+    }
+    QScrollBar::handle:vertical:hover {
+      background: ]] .. t.borderHover .. [[;
+    }
+    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+      height: 0px;
+    }
+    QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+      background: ]] .. t.bgContent .. [[;
+    }
+    QScrollBar:horizontal {
+      background: ]] .. t.bgContent .. [[;
+      height: 10px;
+      margin: 0px;
+    }
+    QScrollBar::handle:horizontal {
+      background: ]] .. t.border .. [[;
+      border-radius: 4px;
+      min-width: 20px;
+    }
+    QScrollBar::handle:horizontal:hover {
+      background: ]] .. t.borderHover .. [[;
+    }
+    QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+      width: 0px;
+    }
+    QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+      background: ]] .. t.bgContent .. [[;
+    }
   ]]
 end
 
