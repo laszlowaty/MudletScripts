@@ -4,9 +4,10 @@ setfenv(1, getfenv(2))
 kchat = kchat or {}
 kchat.enabled = false
 kchat.colors = kchat.colors or {}
-kchat.box = kchat.box or nil
-kchat.console = kchat.console or nil
 kchat.silent = kchat.silent or 'n'
+kchat.boxHeight = kchat.boxHeight or 200
+kchat.history = kchat.history or {}
+kchat.historyMax = 500
 
 function kchat:doChat()
   local param = kinstall.params[1]
@@ -57,25 +58,8 @@ function kchat:doInit()
 end
 
 function kchat:doUpdate()
-  kchat:updateWrap()
+  kchat:render()
 end
-
---
--- Zawijanie linii wg aktualnej szerokosci konsoli (w znakach)
---
-function kchat:updateWrap()
-  if kchat.console == nil then return end
-  local charWidth = calcFontSize(kgui.baseFontHeight)
-  if charWidth == nil or charWidth == 0 then return end
-  local chars = math.floor(kchat.console:get_width() / charWidth) - 1
-  if chars > 10 then
-    kchat.console:setWrap(chars)
-  end
-end
-
---
---
---
 
 function kchat:register()
   kchat:unregister()
@@ -87,36 +71,11 @@ function kchat:unregister()
 end
 
 --
--- Wyswietla konsole chatu w okienku
+-- Wyswietla okienko chatu (ten sam system co reszta widgetow: kgui:addBox + kgui:setBoxContent)
 --
 function kchat:addBox()
-  local wrapper = kgui:addBox('chat', 200, "Czat", "chat")
-  kchat.box = kchat.box or Geyser.Label:new({
-    name = "chat",
-    x = 2,
-    y = (kgui.titleHeight + 2) .. "px",
-    width = "100%-4px",
-    height = "100%-" .. (kgui.titleHeight + 4) .. "px",
-  }, wrapper)
-  kchat.box:setStyleSheet(kgui:styleContent())
-  kchat.box:enableClickthrough()
-  kchat.console = kchat.console or Geyser.MiniConsole:new({
-    name = "chatConsole",
-    width = "100%-6px",
-    height = "100%-4px",
-    x = "4px",
-    y = "2px",
-    fontSize = kgui.baseFontHeight,
-  }, kchat.box)
-  kchat.console:setStyleSheet(kgui:styleMiniConsole())
-  setBackgroundColor("chatConsole", 18, 21, 29, 235)
-  kchat.console:enableAutoWrap()
-  -- upewniamy sie ze wszystko jest odpowiednio przypiete i nie schowane
-  kchat.box:add(kchat.console)
-  kchat.box:raiseAll()
-  kchat.box:show()
-  tempTimer(0, function() kchat:updateWrap() end)
-  kgui:update()
+  kgui:addBox('chat', kchat.boxHeight, "Czat", "chat")
+  kchat:render()
 end
 
 --
@@ -128,7 +87,23 @@ function kchat:removeBox()
 end
 
 --
--- Dodaje wiadomości z czatu do konsoli w okienku
+-- Wylicza ile ostatnich wiadomosci zmiesci sie w okienku i wyswietla je
+--
+function kchat:render()
+  if kgui.ui['chat'] == nil then return end
+  local lineHeight = kgui.baseFontHeightPx or 16
+  local visibleLines = math.floor(kchat.boxHeight / lineHeight)
+  if visibleLines < 1 then visibleLines = 1 end
+  local from = math.max(1, #kchat.history - visibleLines + 1)
+  local lines = {}
+  for i = from, #kchat.history do
+    table.insert(lines, kchat.history[i])
+  end
+  kgui:setBoxContent('chat', table.concat(lines, '<br>'), kchat.boxHeight)
+end
+
+--
+-- Dodaje wiadomości z czatu do okienka
 --
 function kchat:chatTriggerHandler()
   if kchat.enabled == false then
@@ -140,13 +115,13 @@ function kchat:chatTriggerHandler()
   end
 
   selectCurrentLine()
-  local formattedText = copy2decho()
-  -- usuwanie tla
-  formattedText = string.gsub(formattedText, ":%d+,%d+,%d+>", ">")
-  -- poprawka buga w copy2echo
-  formattedText = utf8.gsub(formattedText, "<r><%d+,%d+,%d+>(.)'<r>$", "%1'<r>")
-  kchat:updateWrap()
-  kchat.console:decho(formattedText .. "\n")
+  local formattedText = copy2html()
 
+  table.insert(kchat.history, formattedText)
+  while #kchat.history > kchat.historyMax do
+    table.remove(kchat.history, 1)
+  end
+
+  kchat:render()
   kgui:update()
 end
