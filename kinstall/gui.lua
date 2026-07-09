@@ -1166,7 +1166,7 @@ function kgui:calculateUiScale()
 end
 
 -- bazowy rozmiar czcionki paneli przy 1920x1080 (patrz kgui:calculateUiScale)
-kgui.baseFontHeightAt1080p = kgui.baseFontHeightAt1080p or 12
+kgui.baseFontHeightAt1080p = kgui.baseFontHeightAt1080p or 13
 
 function kgui:calculateSizes()
   kgui:calculateUiScale()
