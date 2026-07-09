@@ -26,6 +26,7 @@ function kchat:doChat()
     end
     return
   end
+  kchat:register()
   kchat:addBox()
   kinstall:setConfig('chat', 't')
   kchat.enabled = true
