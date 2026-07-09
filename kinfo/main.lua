@@ -221,7 +221,7 @@ function kinfo:charInfoEventHandler()
   -- sprawdzamy czy mamy informacje o afektach
   if affs[1] ~= nil and affs[1].unavailable ~= nil then
     height = height + kgui.baseFontHeightPx
-    kgui:setBoxContent('info', txt .. '<center>' .. kgui:transliterate(affs[1].unavailable) .. '</center>', height)
+    kgui:setBoxContent('info', txt .. '<center>' .. kgui:transliterate(affs[1].unavailable) .. '</center>', height + kgui.baseFontHeightPx * 1.5 + kgui.boxPadding * 2 + 8)
     kgui:update()
     return
   end
@@ -302,7 +302,7 @@ function kinfo:charInfoEventHandler()
     end
   end
 
-  kgui:setBoxContent('info', txt, height)
+  kgui:setBoxContent('info', txt, height + kgui.baseFontHeightPx * 1.5 + kgui.boxPadding * 2 + 8)
   kgui:update()
 end
 

@@ -12,13 +12,13 @@
     "shortDesc": "Moduł mapy"
   },
   "kinfo": {
-    "version": 13,
+    "version": 14,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kinfo.zip",
     "commands": [ "info" ],
     "shortDesc": "Moduł informacji o graczu"
   },
   "kgroup": {
-    "version": 13,
+    "version": 14,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kgroup.zip",
     "commands": [ "group" ],
     "shortDesc": "Moduł informacji o grupie"

@@ -197,7 +197,7 @@ function kgroup:charInfoEventHandler()
   end
   txt = txt .. '</table>'
 
-  kgui:setBoxContent('group', txt, #group.members * lineHeight)
+  kgui:setBoxContent('group', txt, #group.members * lineHeight + kgui.baseFontHeightPx * 1.5 + kgui.boxPadding * 2 + 8)
   kgui:update()
 end
 
