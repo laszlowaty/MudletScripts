@@ -78,7 +78,7 @@ end
 --
 function kchat:addBox()
   local wrapper = kgui:addBox('chat', 200, "Czat", "chat")
-  kchat.box = Geyser.Label:new({
+  kchat.box = kchat.box or Geyser.Label:new({
     name = "chat",
     x = 2,
     y = (kgui.titleHeight + 2) .. "px",
@@ -87,7 +87,7 @@ function kchat:addBox()
   }, wrapper)
   kchat.box:setStyleSheet(kgui:styleContent())
   kchat.box:enableClickthrough()
-  kchat.console = Geyser.MiniConsole:new({
+  kchat.console = kchat.console or Geyser.MiniConsole:new({
     name = "chatConsole",
     width = "100%-6px",
     height = "100%-4px",
@@ -110,8 +110,6 @@ end
 --
 function kchat:removeBox()
   kgui:removeBox('chat')
-  kchat.box = nil
-  kchat.console = nil
   kgui:update()
 end
 

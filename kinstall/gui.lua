@@ -342,7 +342,7 @@ function kgui:init()
 end
 
 function kgui:addBox(name, height, title, commandName)
-  kgui.ui[name] = {}
+  kgui.ui[name] = kgui.ui[name] or {}
   kgui.uiState[name] = kgui.uiState[name] or {}
   local wrapperHeight = kgui.uiState[name].height or height
   if wrapperHeight < kgui.baseFontHeightPx + 10 then
