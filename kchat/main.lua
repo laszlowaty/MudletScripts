@@ -86,7 +86,7 @@ function kchat:addBox()
     width = "100%-4px",
     height = "100%-" .. (kgui.titleHeight + 4) .. "px",
   }, wrapper)
-  kchat.box:setStyleSheet(kgui:styleContent("qproperty-alignment: AlignLeft | AlignTop;"))
+  kchat.box:setStyleSheet(kgui:styleContent("qproperty-alignment: AlignTop;"))
   kchat.box:enableClickthrough()
   kchat.box:raiseAll()
   kchat.box:show()
@@ -153,6 +153,7 @@ function kchat:chatTriggerHandler()
   -- usuwamy wypalone tlo pojedynczych znakow (kopiowane z glownego okna),
   -- zeby dziedziczyly tlo panelu czatu zamiast wlasnego czarnego tla
   formattedText = string.gsub(formattedText, "background%-color:%s*[^;\"]+;?", "")
+  formattedText = string.gsub(formattedText, "background:%s*[^;\"]+;?", "")
 
   table.insert(kchat.history, formattedText)
   while #kchat.history > kchat.historyMax do
