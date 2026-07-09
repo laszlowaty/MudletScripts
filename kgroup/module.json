@@ -1,6 +1,6 @@
 {
   "name": "kgroup",
-  "version": 12,
+  "version": 13,
   "commands": [ "group" ],
   "shortDesc": "Moduł informacji o grupie"
 }

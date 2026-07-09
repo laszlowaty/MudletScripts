@@ -156,9 +156,9 @@ function kgroup:charInfoEventHandler()
     -- NAZWA
     txt = txt .. '<td height="' .. lineHeight .. '" valign="center" style="line-height:' .. lineHeight .. 'px;white-space:nowrap;color:' .. color .. ';font-size: ' .. fontSize .. 'px">&nbsp;' .. kgui:transliterate(name) ..'&nbsp;&nbsp;</td>'
     -- HP
-    txt = txt .. '<td height="' .. lineHeight .. '" valign="center" style="line-height:' .. lineHeight .. 'px;white-space:nowrap;">hp: <span style="line-height:' .. lineHeight .. 'px;font-family:Arial">&nbsp;' .. kgroup:hpBar(kgroup:translateHp(kgroup:normalize(ch.hp))) .. '</span>&nbsp;</td>'
+    txt = txt .. '<td height="' .. lineHeight .. '" valign="center" style="line-height:' .. lineHeight .. 'px;white-space:nowrap;font-size:' .. fontSize .. 'px">hp: <span style="line-height:' .. lineHeight .. 'px;font-size:' .. fontSize .. 'px;font-family:Arial">&nbsp;' .. kgroup:hpBar(kgroup:translateHp(kgroup:normalize(ch.hp))) .. '</span>&nbsp;</td>'
     -- MV
-    txt = txt .. '<td height="' .. lineHeight .. '" valign="center" style="line-height:' .. lineHeight .. 'px;white-space:nowrap;">mv: <span style="line-height:' .. lineHeight .. 'px;font-family:Arial">&nbsp;' .. kgroup:mvBar(kgroup:translateMv(kgroup:normalize(ch.mv))) .. '</span>&nbsp;</td>'
+    txt = txt .. '<td height="' .. lineHeight .. '" valign="center" style="line-height:' .. lineHeight .. 'px;white-space:nowrap;font-size:' .. fontSize .. 'px">mv: <span style="line-height:' .. lineHeight .. 'px;font-size:' .. fontSize .. 'px;font-family:Arial">&nbsp;' .. kgroup:mvBar(kgroup:translateMv(kgroup:normalize(ch.mv))) .. '</span>&nbsp;</td>'
     -- POS
     if kgui:transliterate(ch.pos) == "walczy" then
       local enemies = {}
