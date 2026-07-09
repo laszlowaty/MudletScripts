@@ -22,10 +22,19 @@ kinstall.firstGmcpWatch = nil
 -- konsoli - patrz kgui.bgPanel w gui.lua, ten sam kolor motywu paneli
 setBackgroundColor("main", 22, 25, 34, 255)
 -- echo wpisywanych przez gracza komend uzywa osobnego tla, niezaleznego od
--- setBackgroundColor - nowsze Mudlety maja dedykowana funkcje do tego
-if type(setCommandBackgroundColor) == 'function' then
-  setCommandBackgroundColor("main", 22, 25, 34, 255)
+-- setBackgroundColor - nowsze Mudlety (4.17+) maja dedykowana funkcje do tego.
+-- Niektore wersje nie przyjmuja nazwy okna (parametr "nieuzywany"), wiec
+-- probujemy obu wariantow sygnatury.
+function kinstall:applyCommandEchoColors()
+  if type(setCommandBackgroundColor) ~= 'function' then return end
+  local ok = pcall(setCommandBackgroundColor, 22, 25, 34, 255)
+  if not ok then pcall(setCommandBackgroundColor, "main", 22, 25, 34, 255) end
+  if type(setCommandForegroundColor) == 'function' then
+    local ok2 = pcall(setCommandForegroundColor, 219, 226, 234, 255)
+    if not ok2 then pcall(setCommandForegroundColor, "main", 219, 226, 234, 255) end
+  end
 end
+kinstall:applyCommandEchoColors()
 
 -- pobiera plik z wersjami pakietow
 function kinstall:fetchVersions()

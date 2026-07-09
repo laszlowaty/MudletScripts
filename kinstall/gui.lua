@@ -216,6 +216,7 @@ function kgui:styleMiniConsole()
 end
 
 function kgui:init()
+  kinstall:applyCommandEchoColors()
   kgui:calculateSizes()
   kgui.uiState.mainRight = kgui.uiState.mainRight or {}
   kgui.uiState.mainLeft = kgui.uiState.mainLeft or {}
