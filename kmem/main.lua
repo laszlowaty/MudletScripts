@@ -98,7 +98,7 @@ function kmem:memInfoEventHandler()
   -- porzadkowanie po kregach
   local circles = {}
   local queue = {}
-  local fontSize = kgui.baseFontHeight * 0.8
+  local fontSize = kgui.htmlFontSize * 0.8
   local fontSizePx = kgui.baseFontHeightPx * 0.8
 
   for _, mem in pairs(mems) do

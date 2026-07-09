@@ -86,7 +86,7 @@ function kgui:styleTitle()
       padding-left: ]] .. kgui:px(8) .. [[px;
       background-color: ]] .. t.bgPanelHeader .. [[;
       font-family: ]] .. t.font .. [[;
-      font-size: ]] .. kgui.baseFontHeight .. [[px;
+      font-size: ]] .. kgui.htmlFontSize .. [[px;
       color: ]] .. t.textMain .. [[;
       border-top-left-radius: ]] .. t.radius .. [[px;
       border-top-right-radius: ]] .. t.radius .. [[px;
@@ -627,7 +627,7 @@ function kgui:newBoxContent(name, content)
 end
 
 function formatText(content)
-  return "<span style=\"color: " .. kgui.theme.textMain .. "; font-size: " .. kgui.baseFontHeight .. "px; font-family: 'Marcellus'\">" .. content .. "</span>"
+  return "<span style=\"color: " .. kgui.theme.textMain .. "; font-size: " .. kgui.htmlFontSize .. "px; font-family: 'Marcellus'\">" .. content .. "</span>"
 end
 
 function kgui:setBoxContent(name, content, height)
@@ -1124,6 +1124,14 @@ function kgui:calculateSizes()
   kgui.baseFontHeight = kgui:clamp(nominalSize, 8, 24)
   local _, px = calcFontSize(kgui.baseFontHeight, 'Marcellus')
   kgui.baseFontHeightPx = px
+  -- Rozmiar czcionki dla etykiet HTML (font-size w px). UWAGA: konsola kchat
+  -- uzywa setFontSize(baseFontHeight), ktore renderuje sie ~baseFontHeightPx px,
+  -- podczas gdy CSS "font-size: N px" w etykietach renderuje dokladnie N px.
+  -- Dlatego etykiety HTML MUSZA uzywac wartosci pikselowej, nie "punktowej"
+  -- baseFontHeight - inaczej tekst paneli jest kilkukrotnie mniejszy niz czat.
+  -- Wspolczynnik <1 zostawia leading (polskie ogonki ą/ę/ł sie nie obcinaja)
+  -- i dobiera rozmiar tak, by wizualnie odpowiadal czcionce konsoli kchat.
+  kgui.htmlFontSize = kgui:round(px * 0.8)
   kgui.boxPadding = math.ceil(kgui.baseFontHeightPx/2)
   kgui:calculateDerivedSizes()
 end

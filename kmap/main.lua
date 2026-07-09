@@ -267,7 +267,7 @@ function kmap:unregister()
 end
 
 function kmap:showHelp()
-  cechoLink("<gold>Kliknij by otworzyć stronę z helpem.", [[openUrl("https://github.com/KillerMUD-pl/MudletScripts#mapa")]], nil, true)
+  cechoLink("<gold>Kliknij by otworzyć stronę z helpem.", [[openUrl("https://github.com/laszlowaty/MudletScripts#mapa")]], nil, true)
 end
 
 --

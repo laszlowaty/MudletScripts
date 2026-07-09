@@ -6,9 +6,9 @@ kinstall.updateList = {}
 kinstall.runList = {}
 kinstall.cmdCache = {}
 kinstall.autoUpdate = kinstall.autoUpdate or 'y'
-kinstall.repoName = 'https://github.com/KillerMUD-pl/MudletScripts'
-kinstall.repoPath = 'https://raw.githubusercontent.com/KillerMUD-pl/MudletScripts/main/'
-kinstall.readmeLink = "https://github.com/KillerMUD-pl/MudletScripts#komendy"
+kinstall.repoName = 'https://github.com/laszlowaty/MudletScripts'
+kinstall.repoPath = 'https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/'
+kinstall.readmeLink = "https://github.com/laszlowaty/MudletScripts#komendy"
 kinstall.configFile = getMudletHomeDir() .. '/kinstall.config.json'
 kinstall.receivingGmcpTimer = kinstall.receivingGmcpTimer or nil
 kinstall.receivingGmcp = false
@@ -345,8 +345,12 @@ function kinstall:doGui()
   local param = kinstall.params[1]
   if param == 'font' then
     local size = kinstall.params[2]
-    if tonumber(size) < 10 then
-      cecho('<red>Czcionka używana w skryptach nie obsługuje rozmiarów mniejszych niż 10\n')
+    if tonumber(size) == nil then
+      cecho('<gold>Użycie: +gui font <rozmiar>  (dozwolony zakres: 10-24)\n')
+      return
+    end
+    if tonumber(size) < 10 or tonumber(size) > 24 then
+      cecho('<red>Czcionka używana w skryptach obsługuje tylko rozmiary od 10 do 24\n')
       return
     end
     kinstall:setConfig('fontSize', tonumber(size))

@@ -135,7 +135,7 @@ function kgroup:charInfoEventHandler()
   end
 
   local txt = '<table width="100%" align="left" cellspacing="0" cellpadding="0" border="0">'
-  local fontSize = kgui.baseFontHeight
+  local fontSize = kgui.htmlFontSize
   local lineHeight = kgui.baseFontHeightPx
   for _, ch in ipairs(group.members) do
     local color = "#f0f0f0"

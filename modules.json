@@ -1,43 +1,43 @@
 {
   "kinstall": {
-    "version": 34,
-    "url": "https://raw.githubusercontent.com/KillerMUD-pl/MudletScripts/main/dist/kinstall.zip",
+    "version": 35,
+    "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kinstall.zip",
     "commands": [ "install", "remove", "update", "gui", "config" ],
     "shortDesc": "Instalator modułów"
   },
   "kmap": {
-    "version": 58,
-    "url": "https://raw.githubusercontent.com/KillerMUD-pl/MudletScripts/main/dist/kmap.zip",
+    "version": 59,
+    "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kmap.zip",
     "commands": [ "map" ],
     "shortDesc": "Moduł mapy"
   },
   "kinfo": {
-    "version": 12,
-    "url": "https://raw.githubusercontent.com/KillerMUD-pl/MudletScripts/main/dist/kinfo.zip",
+    "version": 13,
+    "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kinfo.zip",
     "commands": [ "info" ],
     "shortDesc": "Moduł informacji o graczu"
   },
   "kgroup": {
-    "version": 11,
-    "url": "https://raw.githubusercontent.com/KillerMUD-pl/MudletScripts/main/dist/kgroup.zip",
+    "version": 12,
+    "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kgroup.zip",
     "commands": [ "group" ],
     "shortDesc": "Moduł informacji o grupie"
   },
   "kmem": {
-    "version": 1,
-    "url": "https://raw.githubusercontent.com/KillerMUD-pl/MudletScripts/main/dist/kmem.zip",
+    "version": 2,
+    "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kmem.zip",
     "commands": [ "mem" ],
     "shortDesc": "Moduł informacji o zapamiętywanych czarach"
   },
   "kchat": {
     "version": 5,
-    "url": "https://raw.githubusercontent.com/KillerMUD-pl/MudletScripts/main/dist/kchat.zip",
+    "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kchat.zip",
     "commands": [ "chat" ],
     "shortDesc": "Moduł czatu (wersja testowa)"
   },
   "kbase": {
     "version": 7,
-    "url": "https://raw.githubusercontent.com/KillerMUD-pl/MudletScripts/main/dist/kbase.zip",
+    "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kbase.zip",
     "commands": [ "lookup" ],
     "shortDesc": "Moduł informacji o świecie"
   }

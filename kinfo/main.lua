@@ -135,6 +135,12 @@ function kinfo:charInfoEventHandler()
   local titleFontSize = math.floor(fontSize * 1.5)
   local infoFontSizePx = kgui.baseFontHeightPx
   local infoFontSize = fontSize
+  -- rozmiary "punktowe" (fontSize/titleFontSize/infoFontSize) sluza WYLACZNIE do
+  -- calcFontSize (pomiar szerokosci znaku). Do CSS "font-size: N px" uzywamy
+  -- wartosci pikselowych *Html (patrz kgui.htmlFontSize), inaczej tekst jest
+  -- kilkukrotnie za maly na ekranach high-DPI.
+  local titleHtml = math.floor(kgui.htmlFontSize * 1.5)
+  local infoHtml = kgui.htmlFontSize
 
   if kgui.uiState.info ~= nil and kgui.uiState.info.socket == "bottomBar" then
     compact = true
@@ -142,61 +148,63 @@ function kinfo:charInfoEventHandler()
     titleFontSize = fontSize
     infoFontSizePx = math.ceil(titleFontSizePx * 0.8)
     infoFontSize = math.ceil(titleFontSize*0.8)
+    titleHtml = kgui.htmlFontSize
+    infoHtml = math.ceil(kgui.htmlFontSize * 0.8)
   end
 
-  local txt = '<span style="white-space:nowrap;height:' .. titleFontSizePx .. 'px;line-height:' .. titleFontSizePx .. 'px"><span style="font-size:' .. titleFontSize .. 'px;">' .. kgui:transliterate(vitals.name) .. '</span>'
+  local txt = '<span style="white-space:nowrap;height:' .. titleFontSizePx .. 'px;line-height:' .. titleFontSizePx .. 'px"><span style="font-size:' .. titleHtml .. 'px;">' .. kgui:transliterate(vitals.name) .. '</span>'
   local sex = 'mężczyzna'
   if vitals.sex == 'F' then sex = 'kobieta' end
-  txt = txt .. '<span style="font-size:' .. fontSize .. 'px;">, ' .. sex .. ', lev. ' .. vitals.level .. '</span></span>\n'
+  txt = txt .. '<span style="font-size:' .. infoHtml .. 'px;">, ' .. sex .. ', lev. ' .. vitals.level .. '</span></span>\n'
   local list = {}
   local height = titleFontSizePx
   local posText = kgui:translatePos(vitals.pos)
-  table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;">' .. posText .. '</span>')
+  table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;">' .. posText .. '</span>')
   if cond.smoking == true then
     local s = "ćmisz&nbsp;fajkę"
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#dd0000">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#dd0000">'..s..'</span>')
   end
   if cond.hungry == true then
     local s = "jesteś&nbsp;głodny"
     if vitals.sex == "F" then s = "Jesteś głodna" end
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#dd0000">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#dd0000">'..s..'</span>')
   end
   if cond.thirsty == true then
     local s = "jesteś&nbsp;spragniony"
     if vitals.sex == "F" then s = "Jesteś spragniona" end
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#dd0000">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#dd0000">'..s..'</span>')
   end
   if cond.sleepy == true then
     local s = "jesteś&nbsp;śpiący"
     if vitals.sex == "F" then s = "Jesteś śpiąca" end
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#dd0000">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#dd0000">'..s..'</span>')
   end
   if cond.overweight == true then
     local s = "jesteś&nbsp;przeciążony"
     if vitals.sex == "F" then s = "Jesteś przeciążona" end
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#dd0000">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#dd0000">'..s..'</span>')
   end
   if cond.drunk == true then
     local s = "jesteś&nbsp;pijany"
     if vitals.sex == "F" then s = "Jesteś pijana" end
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#ff8800">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#ff8800">'..s..'</span>')
   end
   if cond.halucinations == true then
     local s = "jesteś&nbsp;na&nbsp;haju"
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#ff8800">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#ff8800">'..s..'</span>')
   end
   if cond.bleedingWound == true then
     local s = "twoje&nbsp;rany&nbsp;krwawią"
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#ff0000">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#ff0000">'..s..'</span>')
   end
   if cond.bleed == true then
     local s = "jesteś&nbsp;okaleczony"
     if vitals.sex == "F" then s = "Jesteś okaleczona" end
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#ff0000">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#ff0000">'..s..'</span>')
   end
   if cond.thighJab == true then
     local s = "krwawisz&nbsp;z&nbsp;uda"
-    table.insert(list, '<span style="font-size:' .. infoFontSize .. 'px;color:#ff0000">'..s..'</span>')
+    table.insert(list, '<span style="font-size:' .. infoHtml .. 'px;color:#ff0000">'..s..'</span>')
   end
 
   local cond = table.concat(list, ", ")
@@ -219,8 +227,8 @@ function kinfo:charInfoEventHandler()
   end
 
   if #affs > 0 and compact == false then
-    txt = txt .. '<div style="height:'..math.floor(fontSize * 0.5)..'px;font-size:'..math.floor(fontSize * 0.5)..'px;line-height:'..math.floor(fontSize * 0.5)..'px">&nbsp;</div>'
-    height = height + math.floor(fontSize * 0.5)
+    txt = txt .. '<div style="height:'..math.floor(infoHtml * 0.5)..'px;font-size:'..math.floor(infoHtml * 0.5)..'px;line-height:'..math.floor(infoHtml * 0.5)..'px">&nbsp;</div>'
+    height = height + math.floor(infoHtml * 0.5)
   end
 
   txt = txt .. '\n'
@@ -250,7 +258,7 @@ function kinfo:charInfoEventHandler()
       if type(rawAff.extraValue) == 'string' or type(rawAff.extraValue) == 'number' then desc = '(' .. utf8.gsub(rawAff.extraValue, ' ', '&nbsp;' ) .. ') ' .. desc end
       local bgColor = 'rgba(0,0,0,0)'
       if rawAff.ending ~= nil and rawAff.ending == true then bgColor = 'rgba(80,0,0,255)' end
-      txt = txt .. '<div style="line-height:' .. infoFontSize .. 'px;background-color:'..bgColor..';font-size:'..infoFontSize..'px;color:'.. color ..'">' .. desc .. '</div>'
+      txt = txt .. '<div style="line-height:' .. infoHtml .. 'px;background-color:'..bgColor..';font-size:'..infoHtml..'px;color:'.. color ..'">' .. desc .. '</div>'
     end
     -- same nazwy afektow w formie word-wrap
     local list = {}
@@ -266,18 +274,18 @@ function kinfo:charInfoEventHandler()
         if type(aff.extraValue) == 'string' or type(aff.extraValue) == 'number' then affName = '(' .. utf8.gsub(aff.extraValue, ' ', '&nbsp;') .. ') ' .. affName end
         local bgColor = 'rgba(0,0,0,0)'
         if aff.ending ~= nil and aff.ending == true then bgColor = 'rgba(80,0,0,255)' end
-        table.insert(list, '<span style="background-color:'..bgColor..';font-size:'..infoFontSize..'px;color:'..color..'">'..affName..'</span>')
+        table.insert(list, '<span style="background-color:'..bgColor..';font-size:'..infoHtml..'px;color:'..color..'">'..affName..'</span>')
       end
     end
     if #list > 0 then
       local afekty = table.concat(list, ", ")
-      txt = txt .. '<div style="line-height:' .. infoFontSize .. 'px;white-space:wrap;width:100%;font-family:\''..getFont()..'\'">' .. afekty .. '</div>'
+      txt = txt .. '<div style="line-height:' .. infoHtml .. 'px;white-space:wrap;width:100%;font-family:\''..getFont()..'\'">' .. afekty .. '</div>'
       height = height + kinfo:calculateTextHeight(afekty, kgui.ui.info.wrapper:get_width() - kgui.boxPadding * 2 - 4, infoFontSize, infoFontSizePx)
     end
   else
     -- wersja z opisami, dla nie czarujacych
-    if #affs > 6 then infoFontSize = math.floor(infoFontSize * 0.85) end
-    if #affs > 8 then infoFontSize = math.floor(infoFontSize * 0.75) end
+    if #affs > 6 then infoHtml = math.floor(infoHtml * 0.85) end
+    if #affs > 8 then infoHtml = math.floor(infoHtml * 0.75) end
     height = height + infoFontSizePx * #affs
     for _, aff in ipairs(affs) do
       local color = "#44aa44"
@@ -290,7 +298,7 @@ function kinfo:charInfoEventHandler()
       if type(aff.extraValue) == 'string' or type(aff.extraValue) == 'number' then desc = '(' .. utf8.gsub(aff.extraValue, ' ', '&nbsp;') .. ') ' .. desc end
       local bgColor = 'rgba(0,0,0,0)'
       if aff.ending ~= nil and aff.ending == true then bgColor = 'rgba(80,0,0,255)' end
-      txt = txt .. '<div style="line-height:'..infoFontSize..'px;background-color:'..bgColor..';font-size:'..infoFontSize..'px;color:'.. color ..'">' .. desc .. '</div>'
+      txt = txt .. '<div style="line-height:'..infoHtml..'px;background-color:'..bgColor..';font-size:'..infoHtml..'px;color:'.. color ..'">' .. desc .. '</div>'
     end
   end
 
