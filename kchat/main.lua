@@ -108,12 +108,30 @@ function kchat:render()
   if kchat.box == nil then return end
   local lineHeight = kgui.baseFontHeightPx or 16
   local boxHeight = kchat.box:get_height() or kchat.boxHeight
-  local visibleLines = math.floor(boxHeight / lineHeight)
-  if visibleLines < 1 then visibleLines = 1 end
-  local from = math.max(1, #kchat.history - visibleLines + 1)
+  -- zostawiamy maly margines bezpieczenstwa, zeby ostatnia wiadomosc nie byla przycieta
+  local maxLines = math.floor(boxHeight / lineHeight) - 1
+  if maxLines < 1 then maxLines = 1 end
+
+  -- szacujemy ile znakow miesci sie w jednej linii, zeby policzyc ile linii
+  -- faktycznie zajmie zawijana wiadomosc (a nie zakladac 1 wiadomosc = 1 linia)
+  local charsPerLine = 40
+  local charWidth = calcFontSize(kgui.baseFontHeight)
+  local boxWidth = kchat.box:get_width()
+  if charWidth ~= nil and charWidth > 0 and boxWidth ~= nil and boxWidth > 0 then
+    charsPerLine = math.max(10, math.floor(boxWidth / charWidth) - 1)
+  end
+
   local lines = {}
-  for i = from, #kchat.history do
-    table.insert(lines, kchat.history[i])
+  local usedLines = 0
+  for i = #kchat.history, 1, -1 do
+    local msg = kchat.history[i]
+    local plainLen = #(string.gsub(msg, "<[^>]+>", ""))
+    local msgLines = math.max(1, math.ceil(plainLen / charsPerLine))
+    if usedLines + msgLines > maxLines and #lines > 0 then
+      break
+    end
+    table.insert(lines, 1, msg)
+    usedLines = usedLines + msgLines
   end
   kchat.box:rawEcho(formatText(table.concat(lines, '<br>')))
 end
