@@ -57,7 +57,20 @@ function kchat:doInit()
 end
 
 function kchat:doUpdate()
-  --
+  kchat:updateWrap()
+end
+
+--
+-- Zawijanie linii wg aktualnej szerokosci konsoli (w znakach)
+--
+function kchat:updateWrap()
+  if kchat.console == nil then return end
+  local charWidth = calcFontSize(kgui.baseFontHeight)
+  if charWidth == nil or charWidth == 0 then return end
+  local chars = math.floor(kchat.console:get_width() / charWidth) - 1
+  if chars > 10 then
+    kchat.console:setWrap(chars)
+  end
 end
 
 --
@@ -102,6 +115,7 @@ function kchat:addBox()
   kchat.box:add(kchat.console)
   kchat.box:raiseAll()
   kchat.box:show()
+  tempTimer(0, function() kchat:updateWrap() end)
   kgui:update()
 end
 
@@ -131,6 +145,7 @@ function kchat:chatTriggerHandler()
   formattedText = string.gsub(formattedText, ":%d+,%d+,%d+>", ">")
   -- poprawka buga w copy2echo
   formattedText = utf8.gsub(formattedText, "<r><%d+,%d+,%d+>(.)'<r>$", "%1'<r>")
+  kchat:updateWrap()
   kchat.console:decho(formattedText .. "\n")
 
   kgui:update()
