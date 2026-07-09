@@ -360,8 +360,17 @@ function kgui:addBox(name, height, title, commandName)
     kgui.uiState[name].socket = kgui.defaultLayout[name].socket
     kgui.uiState[name].y = kgui.defaultLayout[name].y
     if kgui.defaultLayout[name].fullHeight == true then
-      local _, windowHeight = getMainWindowSize()
-      kgui.uiState[name].height = windowHeight
+      -- wysokosc realnego kontenera paneli, nie calego okna Mudleta -
+      -- inaczej dol boxa (i najnowsze wiadomosci) chowa sie pod ekranem
+      local containerHeight = nil
+      if kgui.mainLeftContainer ~= nil then
+        containerHeight = kgui.mainLeftContainer:get_height()
+      end
+      if containerHeight == nil or containerHeight <= 0 then
+        local _, windowHeight = getMainWindowSize()
+        containerHeight = windowHeight - kgui.titleHeight
+      end
+      kgui.uiState[name].height = containerHeight - 4
     end
   end
   local wrapperHeight = kgui.uiState[name].height or height
@@ -880,11 +889,24 @@ function kgui:update()
   table.sort(boxesBL, sortByYDesc)
   table.sort(boxesBR, sortByYDesc)
   -- wyswietlanie
-  local positionFromTop = function(boxes)
+  local positionFromTop = function(boxes, maxHeight)
     local currentY = 0
     for _, data in pairs(boxes) do
       if data.name ~= kgui.resizedElement then
         kgui:updateWrapperSize(data.name)
+        -- box nie moze wystawac poza dol kontenera - inaczej jego dol
+        -- (np. najnowsze wiadomosci czatu) chowa sie pod ekranem
+        local h = kgui.ui[data.name]['wrapper']:get_height()
+        if (data.minimized == nil or data.minimized == false)
+            and maxHeight ~= nil and currentY + h > maxHeight then
+          local clampedH = maxHeight - currentY - 2
+          if clampedH > kgui.baseFontHeightPx + 10 then
+            kgui.ui[data.name]['wrapper']:resize('100%', clampedH)
+            if kgui.uiState[data.name] ~= nil then
+              kgui.uiState[data.name].height = clampedH
+            end
+          end
+        end
         kgui.ui[data.name]['wrapper']:move(0, currentY)
       end
       if data.minimized == nil or data.minimized == false then
@@ -894,8 +916,8 @@ function kgui:update()
       end
     end
   end
-  positionFromTop(boxesTL)
-  positionFromTop(boxesTR)
+  positionFromTop(boxesTL, kgui.mainLeft.get_height())
+  positionFromTop(boxesTR, kgui.mainRight.get_height())
 
   local positionFromBottom = function(boxes, maxHeight)
     local currentY = maxHeight
