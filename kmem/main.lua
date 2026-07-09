@@ -175,10 +175,13 @@ function kmem:memInfoEventHandler()
   txt = txt .. '</td></tr></table>'
 
   if height < #queue then height = #queue end
-  -- +1 na wiersz stopki (wolne sloty pamieci), ktory nie jest liczony w petli powyzej
-  height = height + 1
+  -- liczymy realna liczbe wierszy <tr> w wygenerowanym HTML zamiast recznego
+  -- doliczania - odporne na pominiecie jakiegos wiersza (np. stopki) w przyszlosci
+  local _, trCount = string.gsub(txt, "<tr>", "")
+  trCount = trCount or 0
+  if trCount > height then height = trCount end
 
-  kgui:setBoxContent('mem', txt, height * fontSizePx + kgui.baseFontHeightPx + kgui.boxPadding * 2 + 4)
+  kgui:setBoxContent('mem', txt, height * fontSizePx + kgui.baseFontHeightPx * 1.5 + kgui.boxPadding * 2 + 8)
   kgui:update()
 end
 

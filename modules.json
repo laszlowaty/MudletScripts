@@ -24,7 +24,7 @@
     "shortDesc": "Moduł informacji o grupie"
   },
   "kmem": {
-    "version": 3,
+    "version": 4,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kmem.zip",
     "commands": [ "mem" ],
     "shortDesc": "Moduł informacji o zapamiętywanych czarach"
