@@ -178,15 +178,7 @@ function kmap:doMap()
     return
   end
   if param == 'view' then
-    if kmap.viewMode == 'native' then
-      kmap.viewMode = 'tile'
-      cecho('<gold>Mapa: widok kafelkowy.\n\n')
-    else
-      kmap.viewMode = 'native'
-      cecho('<gold>Mapa: widok natywny mudleta (prawoklik-Info, edycja, immo).\n\n')
-    end
-    kinstall:setConfig('mapViewMode', kmap.viewMode)
-    kmap:switchView()
+    cecho('<red>Widok kafelkowy jest tymczasowo wylaczony (znany bug layoutu psujacy panel mapy).\n\n')
     return
   end
   if param ~= "silent" then
@@ -257,8 +249,11 @@ function kmap:doInstall()
 end
 
 function kmap:doInit()
-  kmap.viewMode = kinstall:getConfig('mapViewMode')
-  if kmap.viewMode ~= 'tile' then kmap.viewMode = 'native' end
+  -- widok kafelkowy ma nierozwiazany bug layoutu (rozjezdza sie poza panel) -
+  -- wymuszamy natywny zawsze przy starcie, ignorujac ewentualnie zapisana
+  -- wczesniej wartosc 'tile', dopoki tile nie zostanie naprawiony
+  kmap.viewMode = 'native'
+  kinstall:setConfig('mapViewMode', 'native')
   kmap:register()
   if kinstall:getConfig('mapa') == 't' then
     kinstall.params[1] = 'silent'

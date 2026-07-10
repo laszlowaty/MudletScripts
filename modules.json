@@ -6,7 +6,7 @@
     "shortDesc": "Instalator modułów"
   },
   "kmap": {
-    "version": 62,
+    "version": 63,
     "url": "https://raw.githubusercontent.com/laszlowaty/MudletScripts/master/dist/kmap.zip",
     "commands": [ "map" ],
     "shortDesc": "Moduł mapy"
