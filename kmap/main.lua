@@ -178,7 +178,15 @@ function kmap:doMap()
     return
   end
   if param == 'view' then
-    cecho('<red>Widok kafelkowy jest tymczasowo wylaczony (znany bug layoutu psujacy panel mapy).\n\n')
+    if kmap.viewMode == 'native' then
+      kmap.viewMode = 'tile'
+      cecho('<gold>Mapa: widok kafelkowy. Sterowanie przyciskami w prawym gornym rogu panelu.\n\n')
+    else
+      kmap.viewMode = 'native'
+      cecho('<gold>Mapa: widok natywny mudleta (prawoklik-Info, edycja, immo).\n\n')
+    end
+    kinstall:setConfig('mapViewMode', kmap.viewMode)
+    kmap:switchView()
     return
   end
   if param ~= "silent" then
@@ -249,11 +257,8 @@ function kmap:doInstall()
 end
 
 function kmap:doInit()
-  -- widok kafelkowy ma nierozwiazany bug layoutu (rozjezdza sie poza panel) -
-  -- wymuszamy natywny zawsze przy starcie, ignorujac ewentualnie zapisana
-  -- wczesniej wartosc 'tile', dopoki tile nie zostanie naprawiony
-  kmap.viewMode = 'native'
-  kinstall:setConfig('mapViewMode', 'native')
+  kmap.viewMode = kinstall:getConfig('mapViewMode')
+  if kmap.viewMode ~= 'tile' then kmap.viewMode = 'native' end
   kmap:register()
   if kinstall:getConfig('mapa') == 't' then
     kinstall.params[1] = 'silent'
@@ -295,6 +300,17 @@ end
 --
 function kmap:addBox()
   local wrapper = kgui:addBox('mapper', 300, "Mapa", "map")
+  -- mapperBox tworzony jest od nowa przy kazdym otwarciu panelu, wiec wszystkie
+  -- widgety-dzieci (natywny mapper, siatka kafli) musza tez zostac odtworzone
+  -- pod nowym rodzicem - stale referencje do dzieci starego boxa powoduja
+  -- "odklejanie sie" mapy od panelu przy przesuwaniu
+  kmap.nativeMapper = nil
+  kmap.tileContainer = nil
+  kmap.tileHighlight = nil
+  kmap.tilePool = {}
+  kmap.tileConnectorPool = {}
+  kmap.tileLegendIconPool = {}
+  kmap.tileLegendTextPool = {}
   kmap.mapperBox = Geyser.Label:new({
     name = 'mapper',
     x = 2,
@@ -399,14 +415,18 @@ function kmap:addTileGrid()
     height = '100%-4px',
   }, kmap.mapperBox)
   kmap.tileContainer:setStyleSheet([[background: rgba(10,12,18,255);]])
-  -- clickthrough: nie przechwytujemy myszy, zeby nie blokowac przeciagania/
-  -- przestawiania panelu przez kgui (uzywa setMoveCallback na tej samej etykiecie)
+  -- clickthrough: nie przechwytujemy myszy na calym kontenerze, zeby nie blokowac
+  -- przeciagania/przestawiania panelu przez kgui (uzywa setMoveCallback na
+  -- etykiecie wrappera) - sterowanie zoom/pan robimy malymi przyciskami w rogu
   kmap.tileContainer:enableClickthrough()
 
   kmap.tilePool = {}
   kmap.tileConnectorPool = {}
   kmap.tileLegendIconPool = {}
   kmap.tileLegendTextPool = {}
+  kmap.tilePanCol = 0
+  kmap.tilePanRow = 0
+  kmap.tileLastPlayerRoom = nil
 
   kmap.tileHighlight = Geyser.Label:new({
     name = 'mapperPlayerHighlight',
@@ -422,6 +442,71 @@ function kmap:addTileGrid()
   ]])
   kmap.tileHighlight:enableClickthrough()
   kmap.tileHighlight:hide()
+
+  kmap:addTileControls()
+end
+
+--
+-- Male przyciski zoom/pan w prawym gornym rogu widoku kafelkowego.
+-- Celowo przyciski a nie drag/scroll na calym panelu - przechwytywanie myszy
+-- na calej powierzchni psulo kgui-owe przeciaganie paneli (v61/v62)
+--
+function kmap:addTileControls()
+  local buttons = {
+    { txt = '◀', fn = function() kmap:tilePan(-1, 0) end },
+    { txt = '▲', fn = function() kmap:tilePan(0, -1) end },
+    { txt = '▼', fn = function() kmap:tilePan(0, 1) end },
+    { txt = '▶', fn = function() kmap:tilePan(1, 0) end },
+    { txt = '⌂', fn = function() kmap:tileRecenter() end },
+    { txt = '−', fn = function() kmap:tileZoom(-1) end },
+    { txt = '+', fn = function() kmap:tileZoom(1) end },
+  }
+  local size = 22
+  kmap.tileControls = Geyser.Label:new({
+    name = 'mapperTileControls',
+    x = '100%-' .. (#buttons * size + 6) .. 'px',
+    y = '4px',
+    width = (#buttons * size) .. 'px',
+    height = size .. 'px',
+  }, kmap.tileContainer)
+  kmap.tileControls:setStyleSheet([[background: rgba(17,20,28,0.75); border-radius: 4px;]])
+  for i, def in ipairs(buttons) do
+    local btn = Geyser.Label:new({
+      name = 'mapperTileBtn' .. i,
+      x = (i - 1) * size,
+      y = 0,
+      width = size,
+      height = size,
+    }, kmap.tileControls)
+    btn:setStyleSheet([[
+      background: rgba(0,0,0,0);
+      color: ]] .. kgui.theme.textMain .. [[;
+      font-size: 14px;
+      qproperty-alignment: AlignCenter;
+    ]])
+    btn:echo('<center>' .. def.txt .. '</center>')
+    btn:setClickCallback(def.fn)
+  end
+end
+
+function kmap:tilePan(dcol, drow)
+  kmap.tilePanCol = (kmap.tilePanCol or 0) + dcol
+  kmap.tilePanRow = (kmap.tilePanRow or 0) + drow
+  kmap:renderTileGrid(true)
+end
+
+function kmap:tileRecenter()
+  kmap.tilePanCol = 0
+  kmap.tilePanRow = 0
+  kmap:renderTileGrid(true)
+end
+
+function kmap:tileZoom(direction)
+  local newSize = kmap.tileSize + direction * 8
+  if newSize < 32 then newSize = 32 end
+  if newSize > 96 then newSize = 96 end
+  kmap.tileSize = newSize
+  kmap:renderTileGrid(true)
 end
 
 function kmap:removeTileGrid()
@@ -486,11 +571,24 @@ function kmap:renderTileGrid(forceLayout)
     return
   end
 
-  -- gdy gracz faktycznie zmienil pokoj (a nie np. tylko przerysowanie po resize),
+  -- gdy gracz faktycznie zmienil pokoj (a nie np. tylko przerysowanie po
+  -- resize/pan/zoom), wracamy z przesunietym widokiem do wycentrowania na nim
+  if playerRoom ~= kmap.tileLastPlayerRoom then
+    kmap.tilePanCol = 0
+    kmap.tilePanRow = 0
+    kmap.tileLastPlayerRoom = playerRoom
+  end
+
   local areaId = getRoomArea(playerRoom)
   local px, py, pz = getRoomCoordinates(playerRoom)
   local step = kmapper.step or 2
   if step == 0 then step = 1 end
+
+  -- srodek siatki = pokoj gracza + przesuniecie z przyciskow pan
+  local panCol = kmap.tilePanCol or 0
+  local panRow = kmap.tilePanRow or 0
+  local centerX = px + panCol * step
+  local centerY = py - panRow * step
 
   local boxWidth = kmap.tileContainer:get_width() or 400
   local boxHeight = kmap.tileContainer:get_height() or 300
@@ -510,14 +608,15 @@ function kmap:renderTileGrid(forceLayout)
   local roomAtCell = {}
   local visibleSectors = {}
   local tileIndex = 0
+  local playerVisible = false
 
   for row = 0, rows - 1 do
     for col = 0, cols - 1 do
       tileIndex = tileIndex + 1
       local dcol = col - halfCols
       local drow = row - halfRows
-      local x = px + dcol * step
-      local y = py - drow * step
+      local x = centerX + dcol * step
+      local y = centerY - drow * step
 
       local roomId = nil
       local rooms = getRoomsByPosition(areaId, x, y, pz)
@@ -531,9 +630,14 @@ function kmap:renderTileGrid(forceLayout)
 
       if roomId ~= nil then
         roomAtCell[dcol .. ':' .. drow] = { id = roomId, x = x, y = y }
+        -- sector z userdata, a gdy go brak (pokoje z mapa.json bez userdata)
+        -- wyprowadzamy ikone i nazwe z env pokoju ustawionego przez colourRoom
+        local env = getRoomEnv(roomId)
         local sector = getRoomUserData(roomId, 'sector')
-        local iconFile = kmapper.sectorToIcon[sector] or kmapper.sectorToIconDefault
-        if sector == nil or sector == '' then sector = 'nieznany' end
+        if sector == nil or sector == '' then
+          sector = kmapper.envToSector[env] or 'nieznany'
+        end
+        local iconFile = kmapper.sectorToIcon[sector] or kmapper.envToIcon[env] or kmapper.sectorToIconDefault
         visibleSectors[sector] = iconFile
         tile:setStyleSheet([[
           background: rgba(0,0,0,0);
@@ -544,12 +648,18 @@ function kmap:renderTileGrid(forceLayout)
         tile:hide()
       end
 
-      if dcol == 0 and drow == 0 then
+      -- znacznik gracza: komorka pokoju gracza po uwzglednieniu przesuniecia pan
+      if dcol == -panCol and drow == -panRow then
         kmap.tileHighlight:move(offsetX + col * tileSize, offsetY + row * tileSize)
         kmap.tileHighlight:resize(tileSize - kmap.tileGap, tileSize - kmap.tileGap)
         kmap.tileHighlight:show()
+        playerVisible = true
       end
     end
+  end
+
+  if not playerVisible then
+    kmap.tileHighlight:hide()
   end
 
   for i = tileIndex + 1, table.size(kmap.tilePool) do
@@ -591,6 +701,12 @@ function kmap:renderTileGrid(forceLayout)
   end
 
   kmap:renderTileLegend(visibleSectors, offsetY + gridHeight, boxWidth)
+
+  -- kafle i laczniki tworzone sa leniwie juz PO utworzeniu znacznika gracza
+  -- i przyciskow, wiec bez podniesienia przykrywalyby je (z-order wg kolejnosci
+  -- tworzenia)
+  kmap.tileHighlight:raiseAll()
+  if kmap.tileControls ~= nil then kmap.tileControls:raiseAll() end
 end
 
 --

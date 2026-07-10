@@ -342,6 +342,19 @@ kmapper.sectorToIcon = {
 }
 kmapper.sectorToIconDefault = "39_nieuzywany"
 
+-- mapowanie env pokoju (ustawiane przez colourRoom, zapisane w mapa.json) na ikone;
+-- numer pliku ikony = env - 99, wiec budujemy tabele z prefiksow nazw plikow.
+-- Potrzebne bo pokoje wczytane z mapa.json maja env, ale nie zawsze userdata 'sector'
+kmapper.envToIcon = {}
+kmapper.envToSector = {}
+for sector, file in pairs(kmapper.sectorToIcon) do
+  local num = tonumber(string.sub(file, 1, 2))
+  if num ~= nil then
+    kmapper.envToIcon[99 + num] = file
+    kmapper.envToSector[99 + num] = sector
+  end
+end
+
 function kmapper:colourRoom(roomId, sector)
   local sectorToEnv = {
     ["ruchome piaski"] = 100,
