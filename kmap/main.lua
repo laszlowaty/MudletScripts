@@ -25,6 +25,18 @@ kmap.tileGap = 2
 kmap.tileLegendHeight = 40
 kmap.tileMaxCols = 9
 kmap.tileMaxRows = 7
+kmap.tileSizeMin = 32
+kmap.tileSizeMax = 96
+kmap.tileSizeStep = 8
+
+-- przesuniecie widoku (w komorkach siatki) wzgledem pokoju gracza, zerowane
+-- automatycznie gdy gracz zmieni pokoj - patrz kmap:renderTileGrid
+kmap.tilePanCol = kmap.tilePanCol or 0
+kmap.tilePanRow = kmap.tilePanRow or 0
+kmap.tileLastPlayerRoom = nil
+kmap.tileDragging = false
+kmap.tileDragOriginX = nil
+kmap.tileDragOriginY = nil
 
 function kmap:doMap()
   if setMapWindowTitle('WYŁĄCZ OKNO MAPPERA I UŻYJ KOMENDY +map') == true then
@@ -403,7 +415,10 @@ function kmap:addTileGrid()
     height = '100%-4px',
   }, kmap.mapperBox)
   kmap.tileContainer:setStyleSheet([[background: rgba(10,12,18,255);]])
-  kmap.tileContainer:enableClickthrough()
+  kmap.tileContainer:setClickCallback("kmap.onTileClick")
+  kmap.tileContainer:setMoveCallback("kmap.onTileMouseMove")
+  kmap.tileContainer:setReleaseCallback("kmap.onTileRelease")
+  kmap.tileContainer:setWheelCallback("kmap.onTileWheel")
 
   kmap.tilePool = {}
   kmap.tileConnectorPool = {}
@@ -430,6 +445,54 @@ function kmap:removeTileGrid()
   if kmap.tileContainer ~= nil then
     kmap.tileContainer:hide()
   end
+end
+
+--
+-- Przeciaganie mysza przesuwa widok siatki o cale komorki (przesuniecie
+-- wzgledem gracza w kmap.tilePanCol/tilePanRow), kolko myszy zmienia rozmiar kafla (zoom)
+--
+function kmap.onTileClick(event)
+  if event.button ~= "LeftButton" then return end
+  kmap.tileDragging = true
+  kmap.tileDragOriginX = event.globalX
+  kmap.tileDragOriginY = event.globalY
+end
+
+function kmap.onTileMouseMove(event)
+  if kmap.tileDragging ~= true then return end
+
+  local dx = event.globalX - kmap.tileDragOriginX
+  local dy = event.globalY - kmap.tileDragOriginY
+  local moved = false
+
+  if math.abs(dx) >= kmap.tileSize then
+    kmap.tilePanCol = kmap.tilePanCol + (dx > 0 and -1 or 1)
+    kmap.tileDragOriginX = event.globalX
+    moved = true
+  end
+  if math.abs(dy) >= kmap.tileSize then
+    kmap.tilePanRow = kmap.tilePanRow + (dy > 0 and -1 or 1)
+    kmap.tileDragOriginY = event.globalY
+    moved = true
+  end
+
+  if moved then
+    kmap:renderTileGrid(true)
+  end
+end
+
+function kmap.onTileRelease(event)
+  kmap.tileDragging = false
+end
+
+function kmap.onTileWheel(event)
+  local delta = event.angleDeltaY or 0
+  if delta > 0 then
+    kmap.tileSize = math.min(kmap.tileSizeMax, kmap.tileSize + kmap.tileSizeStep)
+  elseif delta < 0 then
+    kmap.tileSize = math.max(kmap.tileSizeMin, kmap.tileSize - kmap.tileSizeStep)
+  end
+  kmap:renderTileGrid(true)
 end
 
 function kmap:getTile(index)
@@ -488,10 +551,25 @@ function kmap:renderTileGrid(forceLayout)
     return
   end
 
+  -- gdy gracz faktycznie zmienil pokoj (a nie np. tylko przerysowanie po resize),
+  -- wracamy do wycentrowania widoku na nim
+  if playerRoom ~= kmap.tileLastPlayerRoom then
+    kmap.tilePanCol = 0
+    kmap.tilePanRow = 0
+    kmap.tileLastPlayerRoom = playerRoom
+  end
+
   local areaId = getRoomArea(playerRoom)
   local px, py, pz = getRoomCoordinates(playerRoom)
   local step = kmapper.step or 2
   if step == 0 then step = 1 end
+
+  -- srodek siatki: pokoj gracza przesuniety o tilePanCol/tilePanRow komorek
+  -- (przeciaganie mysza zmienia offset, patrz kmap.onTileMouseMove)
+  local centerX = px + kmap.tilePanCol * step
+  local centerY = py - kmap.tilePanRow * step
+  local playerDcol = -kmap.tilePanCol
+  local playerDrow = kmap.tilePanRow
 
   local boxWidth = kmap.tileContainer:get_width() or 400
   local boxHeight = kmap.tileContainer:get_height() or 300
@@ -511,14 +589,15 @@ function kmap:renderTileGrid(forceLayout)
   local roomAtCell = {}
   local visibleSectors = {}
   local tileIndex = 0
+  local playerHighlightShown = false
 
   for row = 0, rows - 1 do
     for col = 0, cols - 1 do
       tileIndex = tileIndex + 1
       local dcol = col - halfCols
       local drow = row - halfRows
-      local x = px + dcol * step
-      local y = py - drow * step
+      local x = centerX + dcol * step
+      local y = centerY - drow * step
 
       local roomId = nil
       local rooms = getRoomsByPosition(areaId, x, y, pz)
@@ -545,12 +624,17 @@ function kmap:renderTileGrid(forceLayout)
         tile:hide()
       end
 
-      if dcol == 0 and drow == 0 then
+      if dcol == playerDcol and drow == playerDrow then
         kmap.tileHighlight:move(offsetX + col * tileSize, offsetY + row * tileSize)
         kmap.tileHighlight:resize(tileSize - kmap.tileGap, tileSize - kmap.tileGap)
         kmap.tileHighlight:show()
+        playerHighlightShown = true
       end
     end
+  end
+
+  if not playerHighlightShown then
+    kmap.tileHighlight:hide()
   end
 
   for i = tileIndex + 1, table.size(kmap.tilePool) do
